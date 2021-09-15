@@ -125,6 +125,16 @@
               <p class="description">(Optional) default: 08000000000</p>
             </td>
           </tr>
+          <!--  Merchant Name to be Displayed -->
+          <tr valign="top">
+            <th scope="row">
+              <label for="flw_rave_options[donation_merchant_name]"><?php _e( 'Donation Description', 'rave-pay' ); ?></label>
+            </th>
+            <td class="forminp forminp-text">
+              <input class="regular-text code" type="text" name="flw_rave_options[donation_merchant_name]" value="<?php echo esc_attr( $admin_settings->get_option_value( 'donation_merchant_name' ) ); ?>" />
+              <p class="description">(Optional) default: Donation Merchant Name</p>
+            </td>
+          </tr>
           <!-- Successful Redirect URL -->
           <tr valign="top">
             <th scope="row">
