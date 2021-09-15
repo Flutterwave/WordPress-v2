@@ -49,7 +49,7 @@ $donation_merchant_name = $admin_settinggs->get_option_value('donation_merchant_
         
 
         <!-- the form wrapper -->
-        <div class="wrapper" style="background-image:linear-gradient(rgba(18, 18, 44, 0.8), rgba(18, 18, 44, 0.8)), url(<?php echo plugins_url('assets/images/bg.jpg', FLW_PAY_PLUGIN_FILE); ?>)">
+        <div class="wrapper" style="background-image:linear-gradient(rgba(18, 18, 44, 0.8), rgba(18, 18, 44, 0.8))">
 
             <div class="donation__section">
 
@@ -81,17 +81,17 @@ $donation_merchant_name = $admin_settinggs->get_option_value('donation_merchant_
                                 <div class="form__inner">
                                     <div class="form__item form__item--marginBottom-12">
                                         <label for="" class="form__label">First Name</label> 
-                                        <input type="text" autocomplete="first_name" required="required" id="flw-first-name" placeholder="John" class="form__input"> <!---->
+                                        <input type="text" autocomplete="first_name" required="required" id="flw-first-name" class="form__input"> <!---->
                                     </div>
             
                                     <div class="form__item form__item--marginBottom-12">
                                         <label for="" class="form__label">Last Name</label> 
-                                        <input type="text" autocomplete="last_name" required="required" id="flw-last-name" placeholder="Doe" class="form__input"> <!---->
+                                        <input type="text" autocomplete="last_name" required="required" id="flw-last-name"  class="form__input"> <!---->
                                     </div>
             
                                     <div class="form__item form__item--marginBottom-12">
                                         <label for="" class="form__label">Email Address</label> 
-                                        <input type="email" autocomplete="email_address" required="required" id="flw-customer-email"  placeholder="johndoe@sample.com" class="form__input"> <!---->
+                                        <input type="email" autocomplete="email_address" required="required" id="flw-customer-email"   class="form__input"> <!---->
                                     </div> 
                                     <div class="form__item form__item--marginBottom-12">
                                         <label for="" class="form__label">Amount</label> 
@@ -99,6 +99,7 @@ $donation_merchant_name = $admin_settinggs->get_option_value('donation_merchant_
                                             <div class="newObject__select">
                                             <div class="select">
                                                 <select  id="flw-currency" class="select__input select__input--noRightBorderRadius select__input--transparent" autocomplete="currency_field">
+                                                    <option value="USD">USD</option>
                                                     <option value="AED">AED</option>
                                                     <option value="ARS">ARS</option>
                                                     <option value="AUD">AUD</option>
@@ -144,7 +145,6 @@ $donation_merchant_name = $admin_settinggs->get_option_value('donation_merchant_
                                                     <option value="TWD">TWD</option>
                                                     <option value="TZS">TZS</option>
                                                     <option value="UGX">UGX</option>
-                                                    <option value="USD">USD</option>
                                                     <option value="VEF">VEF</option>
                                                     <option value="XAF">XAF</option>
                                                     <option value="XOF">XOF</option>
