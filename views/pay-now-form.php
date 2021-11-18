@@ -50,7 +50,7 @@
     <?php if ( empty( $atts['amount'] ) ) : ?>
 
       <label class="pay-now"><?php _e( 'Amount', 'rave-pay' ); ?></label>
-      <input class="flw-form-input-text" id="flw-amount" type="text" placeholder="<?php _e( 'Amount', 'rave-pay' ); ?>" required /><br>
+      <input class="flw-form-input-text" id="flw-amount" type="number" placeholder="<?php _e( 'Amount', 'rave-pay' ); ?>" required /><br>
 
     <?php endif; ?>
 
