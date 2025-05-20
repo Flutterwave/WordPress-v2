@@ -27,7 +27,7 @@ defined( 'ABSPATH' ) || exit;
 					echo "<div class='flw-service-name'>" . esc_attr( $service->get_info()['name'] ) . '</div>';
 					echo "<div class='flw-service-desc'>" . 'Trusted by over 1 million developers for secure and scalable REST APIs.
                 All APIs have a free plan . No credit card required.' . '</div>';
-					echo '<button>' . esc_attr__( 'view integration', 'flutterwave-payments' ) . '</button>';
+					echo '<button>' . esc_attr__( 'view integration', 'rave-payment-forms' ) . '</button>';
 					echo '</div>';
 				}
 				echo '</div>';

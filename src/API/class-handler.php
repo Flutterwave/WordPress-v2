@@ -39,8 +39,8 @@ final class Handler {
 	 */
 	public static function get_error_hash_table(): array {
 		return array(
-			500 => new \WP_Error( 'flw-unavailable', __( 'This Services are Currently Unavailable.  Please contact support.', 'flutterwave-payments' ) ),
-			401 => new \WP_Error( 'flw-unauthorized', __( 'You do not have the right permission to this service. please ensure your secret_key has been supplied.', 'flutterwave-payments' ) ),
+			500 => new \WP_Error( 'flw-unavailable', __( 'This Services are Currently Unavailable.  Please contact support.', 'rave-payment-forms' ) ),
+			401 => new \WP_Error( 'flw-unauthorized', __( 'You do not have the right permission to this service. please ensure your secret_key has been supplied.', 'rave-payment-forms' ) ),
 		);
 	}
 }

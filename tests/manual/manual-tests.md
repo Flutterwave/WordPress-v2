@@ -1,7 +1,7 @@
 ## Activate
 
 ```
-start_path: /wp-admin/plugins.php?plugin_status=search&s=flutterwave-payments
+start_path: /wp-admin/plugins.php?plugin_status=search&s=rave-payment-forms
 ```
 
 If you have activated the plugin skip this step.

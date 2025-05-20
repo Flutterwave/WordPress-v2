@@ -7,8 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
+require_once ABSPATH . 'wp-admin/includes/template.php';
+
 if ( ! class_exists( 'WP_List_Table' ) ) {
-	require_once ABSPATH . 'wp-admin/includes/template.php';
 	require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
@@ -42,8 +43,8 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		public function __construct() {
 			parent::__construct(
 				array(
-					'singular' => __( 'Payment List', 'flutterwave-payments' ),
-					'plural'   => __( 'Payment Lists', 'flutterwave-payments' ),
+					'singular' => __( 'Payment List', 'rave-payment-forms' ),
+					'plural'   => __( 'Payment Lists', 'rave-payment-forms' ),
 					'ajax'     => false,
 				)
 			);
@@ -61,7 +62,7 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		 * @return void
 		 */
 		public function no_items() {
-			esc_html_e( 'No payments have been made yet.', 'flutterwave-payments' );
+			esc_html_e( 'No payments have been made yet.', 'rave-payment-forms' );
 		}
 
 		/**
@@ -138,13 +139,13 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		public function get_columns(): array {
 			$columns = array(
 				'cb'       => '<input type="checkbox" />',
-				'tx_ref'   => __( 'Transaction Ref', 'flutterwave-payments' ),
-				'customer' => __( 'Customer', 'flutterwave-payments' ),
-				'fullname' => __( 'Customer Fullname', 'flutterwave-payments' ),
-				'amount'   => __( 'Amount', 'flutterwave-payments' ),
-				'currency' => __( 'Currency', 'flutterwave-payments' ),
-				'status'   => __( 'Status', 'flutterwave-payments' ),
-				'date'     => __( 'Date', 'flutterwave-payments' ),
+				'tx_ref'   => __( 'Transaction Ref', 'rave-payment-forms' ),
+				'customer' => __( 'Customer', 'rave-payment-forms' ),
+				'fullname' => __( 'Customer Fullname', 'rave-payment-forms' ),
+				'amount'   => __( 'Amount', 'rave-payment-forms' ),
+				'currency' => __( 'Currency', 'rave-payment-forms' ),
+				'status'   => __( 'Status', 'rave-payment-forms' ),
+				'date'     => __( 'Date', 'rave-payment-forms' ),
 			);
 
 			return $columns;
@@ -204,8 +205,8 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		public function add_to_menu() {
 			$hook = add_submenu_page(
 				'flutterwave-payments',
-				__( 'Transaction List', 'flutterwave-payments' ),
-				__( 'Transactions', 'flutterwave-payments' ),
+				__( 'Transaction List', 'rave-payment-forms' ),
+				__( 'Transactions', 'rave-payment-forms' ),
 				'manage_options',
 				'flutterwave-payments-transactions',
 				array( $this, 'payment_list_table' )
@@ -274,8 +275,8 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		 */
 		public function add_payment_list_post_type() {
 			$args = array(
-				'label'               => __( 'Payment Lists', 'flutterwave-payments' ),
-				'description'         => __( 'Flutterwave payment lists', 'flutterwave-payments' ),
+				'label'               => __( 'Payment Lists', 'rave-payment-forms' ),
+				'description'         => __( 'Flutterwave payment lists', 'rave-payment-forms' ),
 				'supports'            => array( 'title', 'author', 'custom-fields' ),
 				'hierarchical'        => false,
 				'public'              => false,

@@ -11,7 +11,7 @@
     <coverage processUncoveredFiles="true">
         <include>
             <directory prefix="test-" suffix=".php">./includes</directory>
-            <file>./flutterwave-payments.php</file>
+            <file>./rave-payment-forms.php</file>
         </include>
     </coverage>
     <testsuites>

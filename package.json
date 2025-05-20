@@ -1,6 +1,6 @@
 {
-	"name": "flutterwave-payments",
-	"version": "1.0.6",
+	"name": "rave-payment-forms",
+	"version": "1.0.7",
 	"description": "Official Flutterwave Payment Plugin for WordPress",
 	"main": "index.js",
 	"scripts": {
@@ -8,7 +8,7 @@
 		"prebuild": "npm install && composer install",
 		"build": "npm run uglify && composer run makepot && npm run build:webpack && npm run plugin-zip",
 		"build:webpack": "wp-scripts build",
-		"i18n:merge": "php bin/update-pot-file-references.php i18n/languages/flutterwave-payments.pot",
+		"i18n:merge": "php bin/update-pot-file-references.php i18n/languages/rave-payment-forms.pot",
 		"start": "npm run start:webpack",
 		"start:webpack": "rimraf build/* && wp-scripts start",
 		"preuglify": "rm -f $npm_package_config_assets_js_min",
@@ -41,7 +41,7 @@
 		"npm": ">=8.15.0"
 	},
 	"config": {
-		"wp_org_slug": "flutterwave-payments",
+		"wp_org_slug": "rave-payment-forms",
 		"assets": {
 			"js": {
 				"min": "assets/js/*.min.js",
@@ -69,7 +69,7 @@
 	"author": "Flutterwave Developers",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/bajoski34/Woocommerce-v2/issues"
+		"url": "https://github.com/bajoski34/WordPress-v2/issues"
 	},
 	"files": [
 		"src",
@@ -78,14 +78,14 @@
 		"views",
 		"build",
 		"includes",
-		"flutterwave-payments.php",
+		"rave-payment-forms.php",
 		"README.md",
 		"LICENSE",
 		"CHANGELOG.md",
 		"changelog.txt",
 		"readme.txt"
 	],
-	"homepage": "https://github.com/bajoski34/Woocommerce-v2#readme",
+	"homepage": "https://github.com/Flutterwave/WordPress-v2#readme",
 	"devDependencies": {
 		"@automattic/color-studio": "^2.5.0",
 		"@playwright/test": "^1.32.0",

@@ -35,7 +35,7 @@ class FLW_Shortcodes {
 	 * @return string;
 	 */
 	private static function check_settings_for_api_keys() {
-		$api_key_not_present = __( 'Please configure Flutterwave Payments settings correctly. API keys are still missing.', 'flutterwave-payments' );
+		$api_key_not_present = __( 'Please configure Flutterwave Payments settings correctly. API keys are still missing.', 'rave-payment-forms' );
 		return "<span class='flw-mssing-api-keys'> Note: " . $api_key_not_present . '</span>';
 	}
 
@@ -45,7 +45,7 @@ class FLW_Shortcodes {
 	 * @return string;
 	 */
 	private static function check_redirect_urls() {
-		$api_key_not_present = __( 'Please configure Flutterwave Payments settings correctly. Redirect Urls are missing.', 'flutterwave-payments' );
+		$api_key_not_present = __( 'Please configure Flutterwave Payments settings correctly. Redirect Urls are missing.', 'rave-payment-forms' );
 
 		return "<span class='flw-mssing-api-keys'> Note: " . $api_key_not_present . '</span>';
 	}

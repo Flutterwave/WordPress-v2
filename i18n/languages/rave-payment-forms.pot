@@ -1,0 +1,278 @@
+# Copyright (C) 2023 Flutterwave Developers
+# This file is distributed under the MIT License.
+msgid ""
+msgstr ""
+"Project-Id-Version: Flutterwave Payments 1.0.6\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rave-payment-forms\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-05-19T08:02:43+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.5.0\n"
+"X-Domain: rave-payment-forms\n"
+
+#. Plugin Name of the plugin
+#: includes/class-flw-admin-settings.php:139
+msgid "Flutterwave Payments"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "http://flutterwave.com/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Flutterwave payment gateway forms, accept local and international payments securely."
+msgstr ""
+
+#. Author of the plugin
+msgid "Flutterwave Developers"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://developer.flutterwave.com/"
+msgstr ""
+
+#: includes/class-flutterwave-payments.php:189
+msgid "Flutterwave Payments is installed. - "
+msgstr ""
+
+#: includes/class-flutterwave-payments.php:191
+msgid "Enter your Flutterwave \"Pay Checkout\" Public Key and Secret Key to start accepting payments"
+msgstr ""
+
+#: includes/class-flw-admin-settings.php:150
+msgid "Flutterwave Payments Settings"
+msgstr ""
+
+#: includes/class-flw-admin-settings.php:151
+msgid "Settings"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:45
+msgid "Payment List"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:46
+#: includes/class-flw-payment-list.php:277
+msgid "Payment Lists"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:64
+msgid "No payments have been made yet."
+msgstr ""
+
+#: includes/class-flw-payment-list.php:141
+msgid "Transaction Ref"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:142
+msgid "Customer"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:143
+msgid "Customer Fullname"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:144
+#: includes/shortcodes/class-abstract-flw-shortcode.php:184
+#: includes/vc-elements/class-flw-vc-simple-form.php:47
+#: views/donation-payment.php:61
+#: views/donation-payment.php:62
+msgid "Amount"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:145
+#: includes/shortcodes/class-abstract-flw-shortcode.php:191
+#: includes/shortcodes/class-abstract-flw-shortcode.php:198
+#: views/donation-payment.php:67
+msgid "Currency"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:146
+msgid "Status"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:147
+msgid "Date"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:207
+msgid "Transaction List"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:208
+msgid "Transactions"
+msgstr ""
+
+#: includes/class-flw-payment-list.php:278
+msgid "Flutterwave payment lists"
+msgstr ""
+
+#: includes/class-flw-shortcodes.php:38
+msgid "Please configure Flutterwave Payments settings correctly. API keys are still missing."
+msgstr ""
+
+#: includes/class-flw-shortcodes.php:48
+msgid "Please configure Flutterwave Payments settings correctly. Redirect Urls are missing."
+msgstr ""
+
+#: includes/integrations/class-flw-thirdparty-integrations.php:161
+msgid "Flutterwave Payments Integrations"
+msgstr ""
+
+#: includes/integrations/class-flw-thirdparty-integrations.php:162
+msgid "Integrations"
+msgstr ""
+
+#: includes/shortcodes/class-abstract-flw-shortcode.php:177
+#: views/donation-payment.php:33
+#: views/donation-payment.php:34
+msgid "Email"
+msgstr ""
+
+#: includes/shortcodes/class-abstract-flw-shortcode.php:205
+msgid "Full Name"
+msgstr ""
+
+#: includes/shortcodes/class-abstract-flw-shortcode.php:212
+msgid "Phone Number"
+msgstr ""
+
+#: includes/shortcodes/class-abstract-flw-shortcode.php:219
+#: views/donation-payment.php:40
+#: views/donation-payment.php:41
+msgid "First Name"
+msgstr ""
+
+#: includes/shortcodes/class-abstract-flw-shortcode.php:226
+#: views/donation-payment.php:47
+#: views/donation-payment.php:48
+msgid "Last Name"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:37
+msgid "Flutterwave Simple Form"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:39
+msgid "Flutterwave Simple Pay Now Form"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:40
+msgid "Flutterwave Forms"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:50
+msgid "If left blank, user will be asked to enter the amount to complete the payment."
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:58
+msgid "Use logged-in user's email?"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:59
+msgid "Check this if you want the logged-in user's email to be used. If unchecked or user is not logged in, they will be asked to fill in their email address to complete payment."
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:63
+msgid "Yes"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:70
+msgid "Button Text"
+msgstr ""
+
+#: includes/vc-elements/class-flw-vc-simple-form.php:73
+msgid "(Optional) The text on the PAY NOW button. Default: \"PAY NOW\""
+msgstr ""
+
+#: src/API/class-handler.php:42
+msgid "This Services are Currently Unavailable.  Please contact support."
+msgstr ""
+
+#: src/API/class-handler.php:43
+msgid "You do not have the right permission to this service. please ensure your secret_key has been supplied."
+msgstr ""
+
+#: views/admin-integrations-page.php:30
+msgid "view integration"
+msgstr ""
+
+#: views/admin-settings-page.php:26
+msgid "Pay Button Public Key"
+msgstr ""
+
+#: views/admin-settings-page.php:36
+msgid "Pay Button Secret Key"
+msgstr ""
+
+#: views/admin-settings-page.php:47
+msgid "Secret Hash"
+msgstr ""
+
+#: views/admin-settings-page.php:58
+msgid "Webhook URL"
+msgstr ""
+
+#: views/admin-settings-page.php:62
+msgid "Please copy this webhook URL and paste on the webhook section on your dashboard"
+msgstr ""
+
+#: views/admin-settings-page.php:70
+msgid "Go Live"
+msgstr ""
+
+#: views/admin-settings-page.php:77
+msgid "Switch to live account"
+msgstr ""
+
+#: views/admin-settings-page.php:85
+msgid "Payment Method"
+msgstr ""
+
+#: views/admin-settings-page.php:102
+msgid "Modal Title"
+msgstr ""
+
+#: views/admin-settings-page.php:112
+msgid "Modal Description"
+msgstr ""
+
+#: views/admin-settings-page.php:122
+msgid "Modal Logo"
+msgstr ""
+
+#: views/admin-settings-page.php:132
+msgid "Donation Title"
+msgstr ""
+
+#: views/admin-settings-page.php:142
+msgid "Donation Description"
+msgstr ""
+
+#: views/admin-settings-page.php:152
+msgid "Donation Phone"
+msgstr ""
+
+#: views/admin-settings-page.php:162
+msgid "Pending Redirect URL"
+msgstr ""
+
+#: views/admin-settings-page.php:172
+msgid "Success Redirect URL"
+msgstr ""
+
+#: views/admin-settings-page.php:182
+msgid "Failed Redirect URL"
+msgstr ""
+
+#: views/admin-settings-page.php:192
+msgid "Donation Plan Id"
+msgstr ""
+
+#: views/donation-payment.php:52
+msgid "Payment Type"
+msgstr ""

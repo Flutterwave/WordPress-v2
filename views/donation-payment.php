@@ -30,26 +30,26 @@ $donation_merchant_name = $admin_settings->get_option_value( 'donation_merchant_
 		<div id="notice"></div>
 		<?php if ( empty( $atts['email'] ) ) : ?>
 
-			<label class="pay-now"><?php esc_attr_e( 'Email', 'flutterwave-payments' ); ?></label>
-			<input class="flw-form-input-text" id="flw-customer-email" type="email" placeholder="<?php esc_attr_e( 'Email', 'flutterwave-payments' ); ?>" required /><br>
+			<label class="pay-now"><?php esc_attr_e( 'Email', 'rave-payment-forms' ); ?></label>
+			<input class="flw-form-input-text" id="flw-customer-email" type="email" placeholder="<?php esc_attr_e( 'Email', 'rave-payment-forms' ); ?>" required /><br>
 
 		<?php endif; ?>
 
 		<?php if ( empty( $atts['firstname'] ) ) : ?>
 
-			<label class="pay-now"><?php esc_attr_e( 'First Name', 'flutterwave-payments' ); ?> </label>
-			<input class="flw-form-input-text" id="flw-first-name" type="text" placeholder="<?php esc_attr_e( 'First Name', 'flutterwave-payments' ); ?>" /><br>
+			<label class="pay-now"><?php esc_attr_e( 'First Name', 'rave-payment-forms' ); ?> </label>
+			<input class="flw-form-input-text" id="flw-first-name" type="text" placeholder="<?php esc_attr_e( 'First Name', 'rave-payment-forms' ); ?>" /><br>
 
 		<?php endif; ?>
 
 		<?php if ( empty( $atts['lastname'] ) ) : ?>
 
-			<label class="pay-now"><?php esc_attr_e( 'Last Name', 'flutterwave-payments' ); ?></label>
-			<input class="flw-form-input-text" id="flw-last-name" type="text" placeholder="<?php esc_attr_e( 'Last Name', 'flutterwave-payments' ); ?>" /><br>
+			<label class="pay-now"><?php esc_attr_e( 'Last Name', 'rave-payment-forms' ); ?></label>
+			<input class="flw-form-input-text" id="flw-last-name" type="text" placeholder="<?php esc_attr_e( 'Last Name', 'rave-payment-forms' ); ?>" /><br>
 
 		<?php endif; ?>
 
-		<label class="pay-now"><?php esc_attr_e( 'Payment Type', 'flutterwave-payments' ); ?></label>
+		<label class="pay-now"><?php esc_attr_e( 'Payment Type', 'rave-payment-forms' ); ?></label>
 		<select class="flw-form-select" id="flw-payment-type">
 			<option value="once">Give Once</option>
 			<option value="monthly">Give Monthly</option>
@@ -58,13 +58,13 @@ $donation_merchant_name = $admin_settings->get_option_value( 'donation_merchant_
 
 		<?php if ( empty( $atts['amount'] ) ) : ?>
 
-			<label class="pay-now"><?php esc_attr_e( 'Amount', 'flutterwave-payments' ); ?></label>
-			<input class="flw-form-input-text" id="flw-amount" type="text" placeholder="<?php esc_attr_e( 'Amount', 'flutterwave-payments' ); ?>" required /><br>
+			<label class="pay-now"><?php esc_attr_e( 'Amount', 'rave-payment-forms' ); ?></label>
+			<input class="flw-form-input-text" id="flw-amount" type="text" placeholder="<?php esc_attr_e( 'Amount', 'rave-payment-forms' ); ?>" required /><br>
 
 		<?php endif; ?>
 
 		<?php if ( empty( $atts['currency'] ) ) : ?>
-			<label class="pay-now"><?php esc_attr_e( 'Currency', 'flutterwave-payments' ); ?></label>
+			<label class="pay-now"><?php esc_attr_e( 'Currency', 'rave-payment-forms' ); ?></label>
 			<?php if ( ! empty( $atts['custom_currency'] ) ) { ?>
 
 				<select class="flw-form-select" id="flw-currency" required>

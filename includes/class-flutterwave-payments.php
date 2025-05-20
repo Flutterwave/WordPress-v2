@@ -186,9 +186,9 @@ final class Flutterwave_Payments {
 
 		if ( $no_secret_key || $no_public_key ) {
 			echo '<div class="updated"><p>';
-			esc_attr_e( 'Flutterwave Payments is installed. - ', 'flutterwave-payments' );
+			esc_attr_e( 'Flutterwave Payments is installed. - ', 'rave-payment-forms' );
 			echo '<a href=' . esc_url( add_query_arg( 'page', $this->plugin_name, admin_url( 'admin.php' ) ) ) . " class='button-primary'>";
-			esc_attr_e( 'Enter your Flutterwave "Pay Checkout" Public Key and Secret Key to start accepting payments', 'flutterwave-payments' );
+			esc_attr_e( 'Enter your Flutterwave "Pay Checkout" Public Key and Secret Key to start accepting payments', 'rave-payment-forms' );
 			echo '</a></div>';
 		}
 
@@ -229,18 +229,18 @@ final class Flutterwave_Payments {
 	 */
 	public function get_payment_url() {
 		check_ajax_referer( 'flw-rave-pay-nonce', 'flw_sec_code' );
-		$post_data       = wp_unslash( $_POST );
-		$amount          = isset( $post_data['amount'] ) ? sanitize_text_field( $post_data['amount'] ) : null;
-		$email           = isset( $post_data['customer']['email'] ) ? sanitize_email( $post_data['customer']['email'] ) : null;
-		$country         = isset( $post_data['country'] ) ? sanitize_text_field( $post_data['country'] ) : 'NGN';
-		$form_id         = isset( $post_data['form_id'] ) ? sanitize_text_field( $post_data['form_id'] ) : null;
+
+		$amount          = isset( $_POST['amount'] ) ? sanitize_text_field( wp_unslash( $_POST['amount'] ) ) : null;
+		$email           = isset( $_POST['customer']['email'] ) ? sanitize_email( wp_unslash( $_POST['customer']['email'] ) ) : null;
+		$country         = isset( $_POST['country'] ) ? sanitize_text_field( wp_unslash( $_POST['country'] ) ) : 'NGN';
+		$form_id         = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : null;
 		$tx_ref          = 'WP_' . $form_id . wp_rand( 20, 15003 ) . '_' . time();
-		$currency        = isset( $post_data['currency'] ) ? sanitize_text_field( $post_data['currency'] ) : null;
-		$name            = isset( $post_data['customer']['name'] ) ? sanitize_text_field( $post_data['customer']['name'] ) : null;
-		$phone           = ( isset( $post_data['customer']['phone_number'] ) ) ? sanitize_text_field( $post_data['customer']['phone_number'] ) : null;
-		$payment_options = isset( $post_data['payment_options'] ) ? sanitize_text_field( $post_data['payment_options'] ) : null;
+		$currency        = isset( $_POST['currency'] ) ? sanitize_text_field( wp_unslash( $_POST['currency'] ) ) : null;
+		$name            = isset( $_POST['customer']['name'] ) ? sanitize_text_field( wp_unslash( $_POST['customer']['name'] ) ) : null;
+		$phone           = ( isset( $_POST['customer']['phone_number'] ) ) ? sanitize_text_field( wp_unslash( $_POST['customer']['phone_number'] ) ) : null;
+		$payment_options = isset( $_POST['payment_options'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_options'] ) ) : null;
 		$title           = get_bloginfo( 'name' );
-		$payment_type    = ( isset( $post_data['payment_type'] ) && 'once' !== $post_data['payment_type'] ) ? sanitize_text_field( $post_data['payment_type'] ) : 'once';
+		$payment_type    = ( isset( $_POST['payment_type'] ) && 'once' !== $_POST['payment_type'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_type'] ) ) : 'once';
 
 		$payment_hash_args = array(
 			'amount'   => $amount,

@@ -158,8 +158,8 @@ class FLW_Thirdparty_Integrations {
 	public function add_admin_menu() {
 		add_submenu_page(
 			'flutterwave-payments',
-			__( 'Flutterwave Payments Integrations', 'flutterwave-payments' ),
-			__( 'Integrations', 'flutterwave-payments' ),
+			__( 'Flutterwave Payments Integrations', 'rave-payment-forms' ),
+			__( 'Integrations', 'rave-payment-forms' ),
 			'manage_options',
 			'flutterwave-payments-integrations',
 			array( __CLASS__, 'flw_integration_page' )

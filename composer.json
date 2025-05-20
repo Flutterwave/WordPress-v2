@@ -45,7 +45,7 @@
 			"./vendor/bin/phpcs --runtime-set testVersion 7.2- --standard=PHPCompatibilityWP --extensions=php --ignore=vendor/*,*/build/*.asset.php,*/node_modules/* ."
 		],
 		"makepot-audit": [
-			"wp --allow-root i18n make-pot . --exclude=\".github,.wordpress-org,bin,node_modules,tests,docs\" --slug=flutterwave-payments --debug"
+			"wp --allow-root i18n make-pot . --exclude=\".github,.wordpress-org,bin,node_modules,tests,docs\" --slug=rave-payment-forms --debug"
 		],
 		"makepot": [
 			"@makepot-audit --skip-audit"
@@ -56,8 +56,8 @@
 			"test": "Run unit tests",
 			"standards:check": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
 			"standards:fix": "Fix coding standards warnings/errors automatically with PHP Code Beautifier",
-			"makepot-audit": "Generate i18n/languages/flutterwave-payments.pot file and run audit",
-			"makepot": "Generate i18n/languages/flutterwave-payments.pot file"
+			"makepot-audit": "Generate i18n/languages/rave-payment-forms.pot file and run audit",
+			"makepot": "Generate i18n/languages/rave-payment-forms.pot file"
 		}
 	},
 	"minimum-stability": "stable",

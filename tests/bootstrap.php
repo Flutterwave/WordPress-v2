@@ -37,7 +37,7 @@ function _manually_load_plugin() {
     // sample here: https://github.com/bajoski34/Woocommerce/blob/master/tests/bootstrap.php#L37 .
 
 	$_plugin_dir = __DIR__ . '/../';
-	require $_plugin_dir . 'flutterwave-payments.php';
+	require $_plugin_dir . 'rave-payment-forms.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );

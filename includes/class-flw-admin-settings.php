@@ -136,7 +136,7 @@ class FLW_Admin_Settings {
 	public function flw_rave_add_admin_menu() {
 
 		add_menu_page(
-			__( 'Flutterwave Payments', 'flutterwave-payments' ),
+			__( 'Flutterwave Payments', 'rave-payment-forms' ),
 			'Flutterwave',
 			'manage_options',
 			'flutterwave-payments',
@@ -147,8 +147,8 @@ class FLW_Admin_Settings {
 
 		add_submenu_page(
 			'flutterwave-payments',
-			__( 'Flutterwave Payments Settings', 'flutterwave-payments' ),
-			__( 'Settings', 'flutterwave-payments' ),
+			__( 'Flutterwave Payments Settings', 'rave-payment-forms' ),
+			__( 'Settings', 'rave-payment-forms' ),
 			'manage_options',
 			'flutterwave-payments',
 			array( __CLASS__, 'flw_rave_admin_setting_page' )

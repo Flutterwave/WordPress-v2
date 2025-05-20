@@ -20,7 +20,7 @@ runs:
           id: build_plugin
           shell: bash
           env:
-              RELEASE_FILENAME: 'flutterwave-payments.zip'
+              RELEASE_FILENAME: 'rave-payment-forms.zip'
           run: |
               npm install
               npm run build

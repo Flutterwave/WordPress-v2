@@ -32,7 +32,7 @@ while [[ $? -ne 0 ]]; do
 done
 
 # If the plugin is already active then return early
-cli wp plugin is-active flutterwave-payments > /dev/null
+cli wp plugin is-active rave-payment-forms > /dev/null
 if [[ $? -eq 0 ]]; then
 	set -e
 	echo
@@ -89,7 +89,7 @@ echo "Installing and activating Storefront theme..."
 cli wp theme install storefront --activate
 
 echo "Activating the Flutterwave Payments plugin..."
-cli wp plugin activate flutterwave-payments
+cli wp plugin activate rave-payment-forms
 
 echo "Installing and Activating Transient Manager Plugin ..."
 cli wp plugin install transients-manager --activate

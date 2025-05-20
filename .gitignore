@@ -6,7 +6,7 @@ node_modules
 *.DS_Store
 docs/.vitepress/dist
 docs/.vitepress/cache
-flutterwave-payments.zip
+rave-payment-forms.zip
 .env
 .env.e2e
 .phpunit.result.cache

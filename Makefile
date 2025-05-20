@@ -32,7 +32,7 @@ i18n-pot:
 	composer run makepot
 
 zip:
-	rm flutterwave-payments.zip && npm run plugin-zip
+	rm rave-payment-forms.zip && npm run plugin-zip
 
 inspection:
 	./vendor/bin/phpcs -p . --standard=PHPCompatibilityWP
