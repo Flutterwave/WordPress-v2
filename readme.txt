@@ -3,7 +3,7 @@ Contributors: flutterwave
 Tags: rave, payment form, payment gateway, bank account, credit card, debit card, nigeria, kenya, international, mastercard, visa, flutterwave
 Donate link: http://rave.flutterwave.com/
 Requires at least: 4.4
-Tested up to: 6.3
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.0.7
 License: MIT
