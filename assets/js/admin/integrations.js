@@ -1,3 +1,3 @@
-jQuery(function ($) {
-	$('body').addClass('.flutterwave-page');
-});
+jQuery( function ( $ ) {
+	$( 'body' ).addClass( '.flutterwave-page' );
+} );

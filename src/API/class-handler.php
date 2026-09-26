@@ -28,7 +28,7 @@ final class Handler {
 		$error_hash_table = self::get_error_hash_table();
 
 		if ( isset( $error_hash_table[ $response_status_code ] ) && 400 !== $error_hash_table[ $response_status_code ] ) {
-			throw new ApiException( $error_hash_table[ $response_status_code ] );
+			throw new ApiException( $error_hash_table[ $response_status_code ] ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- carries a WP_Error, never rendered directly.
 		}
 	}
 

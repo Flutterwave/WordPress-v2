@@ -16,6 +16,8 @@ Accept Credit card, Debit card and Bank account payment directly on your store w
 
 = Plugin Features =
 
+* Blocks for the block editor: Payment Button, Payment Form, Donation Form, Pricing Card and Accepted Payment Methods, each with its own colours and settings.
+* Shortcodes: [flw-pay-form] and [flw-donation-form].
 * Collections: Card, Account, Mobile money, Bank Transfers, USSD, Barter, 1voucher.
 * Recurring payments: Tokenization and Subscriptions.
 * Split payments: Split payments between multiple recipients.
@@ -23,7 +25,7 @@ Accept Credit card, Debit card and Bank account payment directly on your store w
 = Requirements =
 
 1. Flutterwave for business [API Keys](https://developer.flutterwave.com/docs/integration-guides/authentication)
-2. Supported PHP version: 5.6.0 - 7.4.0
+2. PHP 7.4 or later
 
 == Installation ==
 
@@ -152,13 +154,32 @@ We love to get your input. Read more about our community contribution guidelines
 
 By contributing to the Flutterwave WooCommerce, you agree that your contributions will be licensed under its [MIT license](/LICENSE).
 
+== External services ==
+
+This plugin connects to services run by Flutterwave Technology Solutions.
+
+**Flutterwave payments API** (api.flutterwave.com) processes payments made through your forms. When a customer submits a form, the plugin sends the amount, currency, the customer's email, name and phone number, and a transaction reference to create the payment, then asks the API to verify it when the customer returns or a webhook arrives. The plugin also reads your account's transactions for the Transactions screen.
+
+**Flutterwave integration analytics** (signozservice-prod.f4b-flutterwave.com) helps Flutterwave see whether integrations are working. The plugin sends:
+
+* when your site is first set up: your public API key, the plugin name and version;
+* when a payment starts: the transaction reference, whether you use test or live keys, and the plugin version;
+* when a live payment succeeds: the transaction reference, amount, currency, fee and payment method;
+* when something goes wrong: an error code and message, with the transaction reference where there is one.
+
+No customer names, email addresses, phone numbers or card details are sent to the analytics service. To turn it off, add `define( 'FLW_DISABLE_TELEMETRY', true );` to wp-config.php, or return false from the `flw_signoz_enabled` filter.
+
+Both services are covered by Flutterwave's [Terms of Service](https://flutterwave.com/us/terms) and [Privacy Notice](https://flutterwave.com/us/privacy-notice).
+
 == Screenshots ==
 
-1. To configure the plugin, go to Rave > Settings from the left menu.
-2. On Visual Composer Add Element dialog, click on "Rave Forms" and select the type of form you want to include on your page.
-3. On the "Form Settings" dialog, fill in the form attributes and click "Save Changes".
-4. Payment Form successfully added to the page.
-5. All the payments made through the forms to Rave can be accessed on Rave > Transactions page.
+1. Go to Flutterwave > Settings and click "Activate Flutterwave" to start the guided setup.
+2. Add your Flutterwave API keys, then copy the webhook URL and secret hash into your Flutterwave dashboard.
+3. Choose the payment methods customers can use: cards, bank transfer, mobile money, Apple Pay, Google Pay and more.
+4. Change your settings at any time from the General, API & Webhook, Payment Methods and Redirects tabs.
+5. See every payment made through your forms under Flutterwave > Transactions.
+6. Add a payment form to any page with the [flw-pay-form] shortcode.
+7. Collect one-off or recurring donations with the [flw-donation-form] shortcode.
 
 
 

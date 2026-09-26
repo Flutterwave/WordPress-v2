@@ -30,4 +30,3 @@ if ( ! class_exists( 'Flutterwave_Payments' ) ) {
 	require_once dirname( FLW_PAY_PLUGIN_FILE ) . '/includes/class-flutterwave-payments.php';
 	$flw_pay_class = Flutterwave_Payments::get_instance();
 }
-

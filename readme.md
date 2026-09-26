@@ -105,6 +105,20 @@ Or you can override the _form_ class `.flw-simple-pay-now-form` from your styles
 
 ## Usage ##
 
+#### Blocks
+
+In the block editor, open the inserter and choose the **Flutterwave** category:
+
+| Block | What it does |
+| --- | --- |
+| Payment Button | One-line checkout for a fixed amount: an email field and a button such as "Pay NGN 5,000". Logged-in users can skip the email. |
+| Payment Form | The full form, with an optional heading and description, a fixed or customer-entered amount, and optional name and phone fields. |
+| Donation Form | One-off or monthly/yearly donations with suggested amounts. |
+| Pricing Card | A plan or product card with price, features, an optional badge and a checkout. |
+| Accepted Payment Methods | A badge listing the methods enabled in Flutterwave > Settings. |
+
+Each block has its own accent colour, button text colour and corner radius under the block's Styles tab. Button text can include `{amount}`, which is replaced with the formatted price. Blocks are rendered on the server with the same code as the shortcodes.
+
 ####1. Shortcode
 
 Insert the shortcode anywhere on your page or post that you want the form to be displayed to the user.
@@ -176,6 +190,32 @@ The shortcode can be added via Visual Composer elements.
 All the payments made through the forms to Rave can be accessed on __Rave > Transactions__ page.
 
 ![Rave Transactions Screenshot](https://cloud.githubusercontent.com/assets/8383666/21606454/01022040-d1b0-11e6-8c61-755cea93ea14.png)
+
+## Development
+
+Requirements: PHP 7.4+, Composer, Node.js 24 (see `.nvmrc`) and Docker (for `wp-env`).
+
+```bash
+npm ci                 # installs npm and Composer dependencies
+npm run env:start      # WordPress at http://localhost:8888 (admin / password)
+```
+
+| Command | What it runs |
+| --- | --- |
+| `npm run start` | Rebuild the admin app (`client/admin`) on every change |
+| `npm run build:admin` | Build the admin app into `build/` once |
+| `npm run test:js` | Vitest tests for the admin app (`client/**/test`) |
+| `npm run test:unit` | Fast PHPUnit + Brain Monkey tests in `tests/Unit` (no WordPress needed) |
+| `npm run test:integration` | PHPUnit against the WordPress test suite inside wp-env (`tests/Integration`) |
+| `npm run test:e2e` | Playwright browser tests against the wp-env site (`tests/e2e`); run `npm run test:e2e:install` once first |
+| `npm test` | All of the above |
+| `npm run lint` | PHPCS (WordPress Coding Standards 3), ESLint and Stylelint |
+| `npm run audit` | `npm audit` and `composer audit` |
+| `npm run build` | Minified JS, translation template and `rave-payment-forms.zip` |
+
+The onboarding wizard and settings screen are a React app in `client/admin`, built with `@wordpress/scripts` and mounted on **Flutterwave → Settings**. It reads and writes settings through the `flutterwave/v1/settings` REST route (`includes/admin`). `build/` is not committed, so run `npm run build:admin` before opening the settings page in a checkout of the repository.
+
+CI (`.github/workflows/ci.yml`) runs linting, dependency audits, unit tests on PHP 7.4–8.5, integration tests on WordPress 6.4 and latest, and the end-to-end suite on every push and pull request.
 
 ## Contribution guidelines
 

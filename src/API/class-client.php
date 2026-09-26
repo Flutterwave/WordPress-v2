@@ -91,7 +91,8 @@ final class Client {
 	 * @return array|\WP_Error
 	 */
 	public function request( string $url, string $method = 'GET', array $data = array() ) {
-		$_request_url       = $this->get_base_url() . $url; // url should be prefixed with a "/" .
+		$_request_url = $this->get_base_url() . $url;
+		// url should be prefixed with a "/" .
 		$wp_args['method']  = $method;
 		$wp_args['timeout'] = $this->timeout;
 		$wp_args['body']    = \wp_json_encode( $data, JSON_UNESCAPED_SLASHES );

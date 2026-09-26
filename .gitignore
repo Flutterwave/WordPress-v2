@@ -18,3 +18,10 @@ build/
 .docker/logs
 .docker/data
 .docker/wordpress
+# Tests
+/.phpunit.cache
+/coverage
+/playwright-report
+/test-results
+/tests/e2e/.state
+/test-reports

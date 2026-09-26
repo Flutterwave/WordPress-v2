@@ -22,7 +22,7 @@ runs:
           env:
               RELEASE_FILENAME: 'rave-payment-forms.zip'
           run: |
-              npm install
+              npm ci
               npm run build
 
               if [[ ! -f $RELEASE_FILENAME ]]; then

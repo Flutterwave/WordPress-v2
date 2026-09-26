@@ -6,7 +6,6 @@
  */
 
 use Flutterwave\WordPress\API\Client;
-use Flutterwave\WordPress\Integration\ApiLayer\ExchangeRateService;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -27,7 +26,28 @@ final class Flutterwave_Payments {
 	 *
 	 * @var string $plugin_version
 	 */
-	private string $plugin_version = '1.0.6';
+	private string $plugin_version = '1.0.7';
+
+	/**
+	 * Allowed donation payment types.
+	 *
+	 * @var string[]
+	 */
+	const PAYMENT_TYPES = array( 'once', 'monthly', 'yearly' );
+
+	/**
+	 * Checkout attempts allowed per IP address within the rate limit window.
+	 *
+	 * @var int
+	 */
+	const RATE_LIMIT_MAX = 30;
+
+	/**
+	 * Rate limit window in seconds.
+	 *
+	 * @var int
+	 */
+	const RATE_LIMIT_WINDOW = 600;
 
 	/**
 	 * Instance variable
@@ -67,7 +87,7 @@ final class Flutterwave_Payments {
 	 */
 	private function define( string $name, $value ) {
 		if ( ! defined( $name ) ) {
-			define( $name, $value );
+			define( $name, $value ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.VariableConstantNameFound -- only called with FLW_ constants.
 		}
 	}
 
@@ -94,11 +114,25 @@ final class Flutterwave_Payments {
 		require_once FLW_DIR_PATH . 'src/Exception/class-apiexception.php';
 		require_once FLW_DIR_PATH . 'src/API/class-handler.php';
 		require_once FLW_DIR_PATH . 'src/API/class-client.php';
+		require_once FLW_DIR_PATH . 'src/Helper/class-webhookhelper.php';
+		require_once FLW_DIR_PATH . 'includes/class-flw-form-config.php';
+		require_once FLW_DIR_PATH . 'includes/class-flw-payment-record.php';
+		require_once FLW_DIR_PATH . 'includes/admin/class-flw-settings.php';
+		require_once FLW_DIR_PATH . 'includes/admin/class-flw-settings-controller.php';
+		require_once FLW_DIR_PATH . 'includes/admin/class-flw-payments-controller.php';
+		require_once FLW_DIR_PATH . 'includes/admin/class-flw-forms-controller.php';
+		require_once FLW_DIR_PATH . 'includes/admin/class-flw-tour.php';
+		require_once FLW_DIR_PATH . 'includes/observability/class-flw-signoz-logger.php';
+		require_once FLW_DIR_PATH . 'includes/observability/class-flw-app-registration.php';
+		require_once FLW_DIR_PATH . 'includes/blocks/class-flw-blocks.php';
 
 		require_once FLW_DIR_PATH . 'includes/api/class-flw-transaction-rest-route.php';
 		require_once FLW_DIR_PATH . 'includes/api/class-flw-webhook-rest-route.php';
 		require_once FLW_DIR_PATH . 'includes/class-flw-shortcodes.php';
-		require_once FLW_DIR_PATH . 'includes/integrations/class-flw-thirdparty-integrations.php';
+		require_once FLW_DIR_PATH . 'includes/integrations/class-flw-hosted-checkout.php';
+		require_once FLW_DIR_PATH . 'includes/integrations/class-flw-integrations.php';
+		require_once FLW_DIR_PATH . 'includes/integrations/class-flw-edd-gateway.php';
+		require_once FLW_DIR_PATH . 'includes/integrations/class-flw-givewp.php';
 
 		if ( is_admin() ) {
 			require_once FLW_DIR_PATH . 'includes/class-flw-tinymce-plugin.php';
@@ -122,7 +156,8 @@ final class Flutterwave_Payments {
 			FLW_Shortcodes::get_instance();
 		}
 		$this->settings = FLW_Admin_Settings::get_instance();
-		FLW_Payment_List::get_instance();
+		// WP_List_Table translates strings in its constructor, which must not happen before init.
+		add_action( 'init', array( 'FLW_Payment_List', 'get_instance' ), 0 );
 		$this->api_client = Client::get_instance( $this->get_option( 'secret_key' ) );
 
 		if ( is_admin() ) {
@@ -134,34 +169,19 @@ final class Flutterwave_Payments {
 		new FLW_Transaction_Rest_Route();
 		new FLW_Webhook_Rest_Route();
 
+		FLW_Settings_Controller::register_hooks();
+		FLW_Payments_Controller::register_hooks();
+		FLW_Forms_Controller::register_hooks();
+		FLW_Tour::register_hooks();
+		FLW_Signoz_Logger::register_hooks();
+		FLW_App_Registration::register_hooks();
+		FLW_Blocks::register_hooks();
+
 		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
-		add_action( 'wp_ajax_process_payment', array( $this, 'process_payment' ) );
-		add_action( 'wp_ajax_nopriv_process_payment', array( $this, 'process_payment' ) );
 		add_action( 'wp_ajax_get_payment_url', array( $this, 'get_payment_url' ) );
 		add_action( 'wp_ajax_nopriv_get_payment_url', array( $this, 'get_payment_url' ) );
 
-		// Register Third party Services.
-	}
-
-	/**
-	 * Register thirdparty integrations.
-	 *
-	 * @return void
-	 */
-	protected function register_third_party_integrations() {
-		// Third party Services.
-		require_once FLW_DIR_PATH . 'src/Integrations/class-abstractservice.php';
-		require_once FLW_DIR_PATH . 'src/Integrations/ApiLayer/class-exchangerateservice.php';
-
-		// get flutterwave integration options.
-
-		$services = array(
-			ExchangeRateService::class,
-		);
-
-		$registry = FLW_Thirdparty_Integrations::get_instance();
-		$registry::register( $services );
-
+		FLW_Integrations::register_hooks();
 	}
 
 	/**
@@ -181,17 +201,22 @@ final class Flutterwave_Payments {
 	 * @return void
 	 */
 	public function admin_notices() {
+		if ( ! current_user_can( 'manage_options' ) || FLW_Admin_Settings::is_settings_screen() ) {
+			return;
+		}
+
 		$no_public_key = empty( $this->get_option( 'public_key' ) ?? '' );
 		$no_secret_key = empty( $this->get_option( 'secret_key' ) ?? '' );
 
 		if ( $no_secret_key || $no_public_key ) {
-			echo '<div class="updated"><p>';
-			esc_attr_e( 'Flutterwave Payments is installed. - ', 'rave-payment-forms' );
-			echo '<a href=' . esc_url( add_query_arg( 'page', $this->plugin_name, admin_url( 'admin.php' ) ) ) . " class='button-primary'>";
-			esc_attr_e( 'Enter your Flutterwave "Pay Checkout" Public Key and Secret Key to start accepting payments', 'rave-payment-forms' );
-			echo '</a></div>';
+			printf(
+				'<div class="notice notice-info"><p><strong>%1$s</strong> %2$s</p><p><a class="button button-primary" href="%3$s">%4$s</a></p></div>',
+				esc_html__( 'Flutterwave Payments is installed.', 'rave-payment-forms' ),
+				esc_html__( 'Connect your Flutterwave account to start accepting payments with your forms.', 'rave-payment-forms' ),
+				esc_url( FLW_Admin_Settings::get_url() ),
+				esc_html__( 'Set up Flutterwave', 'rave-payment-forms' )
+			);
 		}
-
 	}
 
 	/**
@@ -230,17 +255,49 @@ final class Flutterwave_Payments {
 	public function get_payment_url() {
 		check_ajax_referer( 'flw-rave-pay-nonce', 'flw_sec_code' );
 
-		$amount          = isset( $_POST['amount'] ) ? sanitize_text_field( wp_unslash( $_POST['amount'] ) ) : null;
+		if ( $this->is_rate_limited() ) {
+			$this->send_checkout_error( __( 'Too many payment attempts. Please wait a few minutes and try again.', 'rave-payment-forms' ), 429 );
+			return;
+		}
+
+		$form_config = FLW_Form_Config::verify(
+			isset( $_POST['flw_form_config'] ) ? sanitize_text_field( wp_unslash( $_POST['flw_form_config'] ) ) : '',
+			isset( $_POST['flw_form_sig'] ) ? sanitize_text_field( wp_unslash( $_POST['flw_form_sig'] ) ) : ''
+		);
+
+		if ( is_wp_error( $form_config ) ) {
+			$this->send_checkout_error( $form_config->get_error_message() );
+			return;
+		}
+
+		$terms = FLW_Form_Config::resolve_terms(
+			$form_config,
+			isset( $_POST['amount'] ) ? sanitize_text_field( wp_unslash( $_POST['amount'] ) ) : null,
+			isset( $_POST['currency'] ) ? sanitize_text_field( wp_unslash( $_POST['currency'] ) ) : ''
+		);
+
+		if ( is_wp_error( $terms ) ) {
+			$this->send_checkout_error( $terms->get_error_message() );
+			return;
+		}
+
+		$payment_type = isset( $_POST['payment_type'] ) ? sanitize_key( wp_unslash( $_POST['payment_type'] ) ) : 'once';
+
+		if ( ! in_array( $payment_type, self::PAYMENT_TYPES, true ) ) {
+			$this->send_checkout_error( __( 'Invalid payment type.', 'rave-payment-forms' ) );
+			return;
+		}
+
+		$amount          = $terms['amount'];
 		$email           = isset( $_POST['customer']['email'] ) ? sanitize_email( wp_unslash( $_POST['customer']['email'] ) ) : null;
 		$country         = isset( $_POST['country'] ) ? sanitize_text_field( wp_unslash( $_POST['country'] ) ) : 'NGN';
 		$form_id         = isset( $_POST['form_id'] ) ? sanitize_text_field( wp_unslash( $_POST['form_id'] ) ) : null;
 		$tx_ref          = 'WP_' . $form_id . wp_rand( 20, 15003 ) . '_' . time();
-		$currency        = isset( $_POST['currency'] ) ? sanitize_text_field( wp_unslash( $_POST['currency'] ) ) : null;
+		$currency        = $terms['currency'];
 		$name            = isset( $_POST['customer']['name'] ) ? sanitize_text_field( wp_unslash( $_POST['customer']['name'] ) ) : null;
 		$phone           = ( isset( $_POST['customer']['phone_number'] ) ) ? sanitize_text_field( wp_unslash( $_POST['customer']['phone_number'] ) ) : null;
-		$payment_options = isset( $_POST['payment_options'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_options'] ) ) : null;
-		$title           = get_bloginfo( 'name' );
-		$payment_type    = ( isset( $_POST['payment_type'] ) && 'once' !== $_POST['payment_type'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_type'] ) ) : 'once';
+		$payment_options = FLW_Settings::payment_options();
+		$title           = '' !== FLW_Settings::get( 'modal_title' ) ? FLW_Settings::get( 'modal_title' ) : get_bloginfo( 'name' );
 
 		$payment_hash_args = array(
 			'amount'   => $amount,
@@ -270,6 +327,13 @@ final class Flutterwave_Payments {
 				'_flw_rave_payment_status'   => 'pending',
 				'_flw_rave_payment_tx_ref'   => $tx_ref,
 			);
+
+			$source = self::source_post_id();
+
+			if ( $source > 0 ) {
+				$post_meta[ FLW_Payments_Controller::SOURCE_META ] = $source;
+			}
+
 			$this->add_post_meta( $payment_record_id, $post_meta );
 		}
 		$redirect_url = get_site_url() . '/wp-json/flutterwave/v1/verify-transaction?order=' . $payment_record_id;
@@ -295,16 +359,21 @@ final class Flutterwave_Payments {
 				'order_amount'   => $amount,
 				'order_currency' => $currency,
 			),
-			'customizations'  => array(
-				'title'       => $title,
-				'description' => 'Payment #' . $payment_record_id ?? '2019384',
+			'customizations'  => array_filter(
+				array(
+					'title'       => $title,
+					'description' => '' !== FLW_Settings::get( 'modal_desc' ) ? FLW_Settings::get( 'modal_desc' ) : 'Payment #' . $payment_record_id,
+					'logo'        => FLW_Settings::get( 'modal_logo' ),
+				)
 			),
 		);
 
 		if ( 'once' !== $payment_type ) {
-			$key = $amount . '_' . $currency . '_' . $payment_type;
+			$key = 'flw_plan_' . md5( $amount . '_' . $currency . '_' . $payment_type );
 			// check if the payment_plan exists in transient.
-			if ( ! get_transient( $key ) ) {
+			$plan_id = get_transient( $key );
+
+			if ( ! $plan_id ) {
 
 				$plan_id = $this->generate_payment_plan(
 					array(
@@ -315,12 +384,22 @@ final class Flutterwave_Payments {
 					)
 				);
 
-				set_transient( $key, $plan_id );
-			} else {
-				$plan_id = get_transient( $key );
-			}
+				if ( is_wp_error( $plan_id ) || empty( $plan_id ) ) {
+					FLW_Signoz_Logger::instance()->track_error(
+						'PAYMENT_PLAN_FAILED',
+						is_wp_error( $plan_id ) ? $plan_id->get_error_message() : 'Payment plan creation returned no id',
+						$tx_ref
+					);
+					$this->send_checkout_error( __( 'Unable to set up a recurring donation. Please try again.', 'rave-payment-forms' ) );
+					return;
+				}
+
+				set_transient( $key, $plan_id, 30 * DAY_IN_SECONDS );
+			}//end if
 			$payload['payment_plan'] = $plan_id;
-		}
+		}//end if
+
+		FLW_Signoz_Logger::instance()->track_request_sent( 'POST', $tx_ref, '/payments' );
 
 		$response = $this->api_client->request(
 			'/payments',
@@ -329,94 +408,32 @@ final class Flutterwave_Payments {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json(
-				array(
-					'status'  => 'error',
-					'message' => $response->get_error_message(),
-				),
-				400
-			);
-
-			wp_die();
+			FLW_Signoz_Logger::instance()->track_error( 'CHECKOUT_FAILED', $response->get_error_message(), $tx_ref );
+			$this->send_checkout_error( $response->get_error_message() );
+			return;
 		}
-		$response = json_decode( wp_remote_retrieve_body( $response ) );
+
+		$body = json_decode( wp_remote_retrieve_body( $response ) );
+		$link = is_object( $body ) && isset( $body->data->link ) && is_string( $body->data->link ) ? $body->data->link : '';
+
+		// Flutterwave answers validation problems with a 400 and no payment link.
+		if ( '' === $link ) {
+			$reason = is_object( $body ) && isset( $body->message ) && is_string( $body->message ) ? $body->message : 'No payment link returned';
+			FLW_Signoz_Logger::instance()->track_error( 'CHECKOUT_FAILED', $reason, $tx_ref );
+			$this->send_checkout_error( __( 'Unable to start the payment. Please try again.', 'rave-payment-forms' ), 502 );
+			return;
+		}
+
 		wp_send_json(
 			array(
 				'status' => 'success',
 				'data'   => $payload,
-				'url'    => $response->data->link,
+				'url'    => $link,
 			),
 			200
 		);
 
 		wp_die();
-	}
-
-	/**
-	 * Processes payment record information
-	 *
-	 * @return void
-	 */
-	public function process_payment() {
-
-		global $admin_settings;
-
-		// TODO: Payment status should be pending at the moment.
-		$redirect_url_key = 'failed_redirect_url';
-
-		check_ajax_referer( 'flw-rave-pay-nonce', 'flw_sec_code' );
-
-		$tx_ref = isset( $_POST['tx_ref'] ) ? sanitize_text_field( wp_unslash( $_POST['tx_ref'] ) ) : null;
-
-		$res_data = json_decode( $this->fetch_transaction( $tx_ref ) );
-
-		if ( is_object( $res_data->data ) && $this->is_successful( $res_data->data ) ) {
-			$status            = $res_data->data->status;
-			$customer_fullname = $res_data->data->customer->name;
-			$customer_email    = $res_data->data->customer->email;
-			$customer_id       = $res_data->data->customer->id;
-			$amount            = $res_data->data->amount;
-
-			$args = array(
-				'post_type'   => 'payment_list',
-				'post_status' => 'publish',
-				'post_title'  => $tx_ref,
-			);
-
-			$payment_record_id = wp_insert_post( $args, true );
-
-			if ( ! is_wp_error( $payment_record_id ) ) {
-
-				$post_meta = array(
-					'_flw_rave_payment_amount'   => $amount,
-					'_flw_rave_payment_fullname' => $customer_fullname,
-					'_flw_rave_payment_customer' => $customer_email,
-					'_flw_rave_payment_status'   => $status,
-					'_flw_rave_payment_tx_ref'   => $tx_ref,
-				);
-				$this->add_post_meta( $payment_record_id, $post_meta );
-			}
-
-			if ( 'successful' === $status ) {
-				$redirect_url_key = 'success_redirect_url';
-			}
-
-			echo wp_json_encode(
-				array(
-					'status'       => $status,
-					'redirect_url' => $admin_settings->get_option_value( $redirect_url_key ),
-				)
-			);
-			die();
-		}
-
-		echo wp_json_encode(
-			array(
-				'status'       => $res_data->status,
-				'redirect_url' => $admin_settings->get_option_value( $redirect_url_key ),
-			)
-		);
-		die();
 	}
 
 	/**
@@ -435,28 +452,71 @@ final class Flutterwave_Payments {
 	}
 
 	/**
-	 * Fetches transaction from flutterwave endpoint
+	 * The page the checkout form was submitted from, so the Payment Forms screen
+	 * can count payments per page. 0 when it cannot be told.
 	 *
-	 * @param string $tx_ref Transaction reference.
-	 *
-	 * @return string
+	 * @return int
 	 */
-	private function fetch_transaction( $tx_ref ): string {
-		$url      = '/transactions/verify_by_reference?tx_ref=' . $tx_ref;
-		$response = $this->api_client->request( $url );
+	private static function source_post_id(): int {
+		$referer = wp_get_referer();
 
-		return wp_remote_retrieve_body( $response );
+		if ( ! is_string( $referer ) || '' === $referer ) {
+			return 0;
+		}
+
+		$post_id = url_to_postid( $referer );
+
+		if ( 0 === $post_id && untrailingslashit( strtok( $referer, '?' ) ) === untrailingslashit( home_url() ) ) {
+			$post_id = (int) get_option( 'page_on_front' );
+		}
+
+		return $post_id > 0 && 'publish' === get_post_status( $post_id ) ? $post_id : 0;
 	}
 
 	/**
-	 * Checks if payment is successful
+	 * Send a checkout error to the browser.
 	 *
-	 * @param object $data  the transaction object to do the check on.
+	 * @param string $message     The error message.
+	 * @param int    $status_code HTTP status code.
 	 *
-	 * @return boolean
+	 * @return void
 	 */
-	private function is_successful( object $data ): bool {
-		return 'successful' === $data->status;
+	private function send_checkout_error( string $message, int $status_code = 400 ): void {
+		wp_send_json(
+			array(
+				'status'  => 'error',
+				'message' => esc_html( $message ),
+			),
+			$status_code
+		);
+	}
+
+	/**
+	 * Count a checkout attempt for the current IP and report whether it is over the limit.
+	 *
+	 * Behind a proxy every visitor may share REMOTE_ADDR, so the limit can be raised or
+	 * disabled (0) with the `flw_checkout_rate_limit` filter.
+	 *
+	 * @return bool
+	 */
+	private function is_rate_limited(): bool {
+		$limit = (int) apply_filters( 'flw_checkout_rate_limit', self::RATE_LIMIT_MAX );
+
+		if ( $limit <= 0 ) {
+			return false;
+		}
+
+		$ip_address = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+		$key        = 'flw_rl_' . md5( $ip_address );
+		$attempts   = (int) get_transient( $key );
+
+		if ( $attempts >= $limit ) {
+			return true;
+		}
+
+		set_transient( $key, $attempts + 1, self::RATE_LIMIT_WINDOW );
+
+		return false;
 	}
 
 	/**
@@ -510,5 +570,3 @@ final class Flutterwave_Payments {
 		return self::$instance;
 	}
 }
-
-
