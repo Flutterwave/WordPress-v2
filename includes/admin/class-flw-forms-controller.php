@@ -201,36 +201,43 @@ final class FLW_Forms_Controller {
 	 * @return array<int, array{count: int, totals: array<string, float>}>
 	 */
 	public static function payment_stats( array $page_ids ): array {
-		global $wpdb;
-
 		$page_ids = array_values( array_filter( array_map( 'intval', $page_ids ) ) );
 
 		if ( ! $page_ids ) {
 			return array();
 		}
 
-		// Ids are passed as one comma-separated placeholder so no SQL is built from input.
-		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- admin-only aggregate.
-			$wpdb->prepare(
-				"SELECT s.meta_value AS source, c.meta_value AS currency, COUNT(*) AS payments, SUM(CAST(a.meta_value AS DECIMAL(20,2))) AS total
-				FROM {$wpdb->posts} p
-				INNER JOIN {$wpdb->postmeta} s ON s.post_id = p.ID AND s.meta_key = %s
-				INNER JOIN {$wpdb->postmeta} st ON st.post_id = p.ID AND st.meta_key = '_flw_rave_payment_status' AND st.meta_value = 'successful'
-				LEFT JOIN {$wpdb->postmeta} c ON c.post_id = p.ID AND c.meta_key = '_flw_rave_payment_currency'
-				LEFT JOIN {$wpdb->postmeta} a ON a.post_id = p.ID AND a.meta_key = '_flw_rave_payment_amount'
-				WHERE p.post_type = %s AND FIND_IN_SET(s.meta_value, %s)
-				GROUP BY s.meta_value, c.meta_value",
-				FLW_Payments_Controller::SOURCE_META,
-				FLW_Payment_Record::POST_TYPE,
-				implode( ',', $page_ids )
-			),
-			ARRAY_A
+		$records = get_posts(
+			array(
+				'post_type'        => FLW_Payment_Record::POST_TYPE,
+				'post_status'      => 'any',
+				'posts_per_page'   => -1,
+				'fields'           => 'ids',
+				'no_found_rows'    => true,
+				'suppress_filters' => true,
+				'meta_query'       => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- admin-only aggregate.
+					'relation' => 'AND',
+					array(
+						'key'     => FLW_Payments_Controller::SOURCE_META,
+						'value'   => $page_ids,
+						'compare' => 'IN',
+					),
+					array(
+						'key'   => '_flw_rave_payment_status',
+						'value' => 'successful',
+					),
+				),
+			)
 		);
+
+		// One query for all of the records' meta instead of one per record.
+		update_meta_cache( 'post', $records );
 
 		$stats = array();
 
-		foreach ( (array) $rows as $row ) {
-			$id = (int) $row['source'];
+		foreach ( $records as $record ) {
+			$id       = (int) get_post_meta( $record, FLW_Payments_Controller::SOURCE_META, true );
+			$currency = (string) get_post_meta( $record, '_flw_rave_payment_currency', true );
 
 			if ( ! isset( $stats[ $id ] ) ) {
 				$stats[ $id ] = array(
@@ -239,10 +246,12 @@ final class FLW_Forms_Controller {
 				);
 			}
 
-			$stats[ $id ]['count'] += (int) $row['payments'];
+			++$stats[ $id ]['count'];
 
-			if ( '' !== (string) $row['currency'] ) {
-				$stats[ $id ]['totals'][ (string) $row['currency'] ] = (float) $row['total'];
+			if ( '' !== $currency ) {
+				$total = $stats[ $id ]['totals'][ $currency ] ?? 0.0;
+
+				$stats[ $id ]['totals'][ $currency ] = round( $total + (float) get_post_meta( $record, '_flw_rave_payment_amount', true ), 2 );
 			}
 		}
 
