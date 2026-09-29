@@ -1,158 +1,155 @@
 === Flutterwave Payments ===
 Contributors: flutterwave
-Tags: rave, payment form, payment gateway, bank account, credit card, debit card, nigeria, kenya, international, mastercard, visa, flutterwave
-Donate link: http://rave.flutterwave.com/
-Requires at least: 4.4
+Tags: flutterwave, payment form, donation, mobile money, payment gateway
+Requires at least: 6.4
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.7
+Stable tag: 1.1.0
 License: MIT
-License URI: https://github.com/Flutterwave/rave-payment-forms/blob/master/LICENSE
+License URI: https://opensource.org/licenses/MIT
 
-Accept Credit card, Debit card and Bank account payment directly on your WordPress site with the Flutterwave Payments Plugin.
+Take payments and donations on any WordPress page, and let customers pay with cards, bank transfer, mobile money, Apple Pay or Google Pay.
 
 == Description ==
-Accept Credit card, Debit card and Bank account payment directly on your store with the official Flutterwave Plugin for WordPress.
 
-= Plugin Features =
+**Flutterwave Payments is the official Flutterwave plugin for WordPress.** Add a payment button, payment form, donation form or pricing card to any page. Customers pay on Flutterwave's secure checkout with the method they already use, and the money goes to your Flutterwave account.
 
-* Blocks for the block editor: Payment Button, Payment Form, Donation Form, Pricing Card and Accepted Payment Methods, each with its own colours and settings.
-* Shortcodes: [flw-pay-form] and [flw-donation-form].
-* Collections: Card, Account, Mobile money, Bank Transfers, USSD, Barter, 1voucher.
-* Recurring payments: Tokenization and Subscriptions.
-* Split payments: Split payments between multiple recipients.
+You don't need an online store, a developer or any code. A guided setup takes a few minutes, and you can try everything with test keys before taking real money.
 
-= Requirements =
+= Why use Flutterwave Payments =
 
-1. Flutterwave for business [API Keys](https://developer.flutterwave.com/docs/integration-guides/authentication)
-2. PHP 7.4 or later
+* **Let customers pay the way they want.** Cards (Visa, Mastercard, American Express), bank transfer, mobile money, Apple Pay, Google Pay, Opay and stablecoins (USDT and USDC). USSD, QR, NQR, Barter and Credit are also available.
+* **Accept local and international money.** Charge in NGN, GHS, KES, ZAR, TZS, UGX, RWF, ZMW, USD, GBP or EUR, or let customers choose.
+* **Go live in minutes.** Guided setup walks you through your business details, API keys, webhook and payment methods. It creates your webhook secret for you and tells you whether you're using test or live keys.
+* **Use the block editor.** Five blocks, each with its own colours, corner radius and button text.
+* **Collect regular donations.** Donors can give once, monthly or yearly, and you can suggest amounts.
+* **See every payment in WordPress.** Filter by date, status and currency, check a payment again with Flutterwave, and download a CSV for your accounts.
+* **Know what each form earns.** The Payment Forms screen lists every form on your site, the page it's on and the payments it has taken.
+* **Connect the plugins you already use.** Easy Digital Downloads and GiveWP gateways are built in, and the Flutterwave WooCommerce extension installs in one click.
+
+= Blocks =
+
+Open the block inserter and choose the **Flutterwave** category.
+
+* **Payment Button:** an email field and a pay button for a fixed amount, like "Pay NGN 5,000". Logged-in users can skip the email.
+* **Payment Form:** a full form with an optional heading and description, and a fixed amount or one the customer enters. Name and phone fields are optional.
+* **Donation Form:** one-off, monthly or yearly donations, with up to six suggested amounts.
+* **Pricing Card:** a plan or product card with a price, a list of features, an optional badge and a checkout button.
+* **Payment Methods:** a badge that shows customers which payment methods you accept, kept in step with your settings.
+
+Button text can include `{amount}`, which is replaced with the formatted price.
+
+= Shortcodes =
+
+Prefer shortcodes, or using a page builder? Paste one into any page, post or widget. **Flutterwave > Payment Forms** has a builder with a live preview that writes the shortcode for you.
+
+**Payment form:** `[flw-pay-form]`
+
+* `amount="5000"`: fixed amount. Leave it out to let the customer enter one.
+* `currency="NGN,USD,GBP"`: one currency, or several for the customer to choose from.
+* `heading="Book a session"` and `description="..."`: text above the form.
+* `use_current_user_email="yes"`: fills in the logged-in user's email.
+* `split_name="1"`: separate first and last name fields.
+* `exclude="phone"`: hides a field (`phone`, `fullname` or a custom field).
+* `custom_fields="company:text,size:select|Small:S|Large:L"`: adds your own fields.
+* `order="email,fullname,amount,currency"`: changes the field order.
+* `layout="compact"`, `width="full"`, `show_secured="0"`: change the look.
+* Button text goes between the tags: `[flw-pay-form amount="5000"]Pay {amount}[/flw-pay-form]`.
+
+**Donation form:** `[flw-donation-form]`
+
+* `heading` and `message`: text above the form.
+* `currency="USD"`: the donation currency.
+* `amounts="1000,5000,10000"`: suggested amounts.
+* `show_frequency="0"`: one-off donations only.
+
+`[flw-pay-button]` from earlier versions still works.
+
+= Works with =
+
+* **Easy Digital Downloads:** sell ebooks, software, music and other downloads with Flutterwave at checkout.
+* **GiveWP:** collect donations through GiveWP forms and campaigns.
+* **WooCommerce:** install the official Flutterwave WooCommerce extension from **Flutterwave > Integrations**.
+* **Classic Editor and WPBakery:** a toolbar button and a "Flutterwave Simple Form" element insert a payment form.
+
+WPForms, Gravity Forms, Contact Form 7, Paid Memberships Pro, MemberPress, LearnDash, Tutor LMS and Event Tickets are coming soon. You can tell us which one you need from the Integrations screen.
+
+= Secure by design =
+
+* Customers enter payment details on Flutterwave's checkout, never on your site.
+* The amount and currency are signed on your server, so they can't be changed in the browser.
+* Every payment is confirmed with Flutterwave before it's marked successful.
+* Webhooks are only accepted with your secret hash, which is checked in constant time.
+* Secret keys are masked in the admin, and checkout requests are rate-limited.
 
 == Installation ==
 
-= Automatic Installation =
+= What you need =
 
-* Login to your WordPress Dashboard.
-* Click on "Plugins > Add New" from the left menu.
-* In the search box type Flutterwave Payments.
-* Click on Install Now on Flutterwave Payments to install the plugin on your site.
-* Confirm the installation.
-* Activate the plugin.
-* Go to "Rave > Settings" from the left menu to configure the plugin.
+* A [Flutterwave account](https://app.flutterwave.com/register). You can sign up for free and use test mode straight away.
+* WordPress 6.4 or later and PHP 7.4 or later.
 
+= Set up in five steps =
 
-= Manual Installation =
+1. In your WordPress dashboard, go to **Plugins > Add New**, search for **Flutterwave Payments**, then click **Install Now** and **Activate**.
+2. Go to **Flutterwave > Settings** and click **Activate Flutterwave** to start the guided setup.
+3. **General details:** add your business name, logo and default currency.
+4. **API & webhook:** paste your public and secret keys from **Settings > API Keys** in your Flutterwave dashboard. Then copy the webhook URL and secret hash from the plugin into **Settings > Webhooks** in the Flutterwave dashboard.
+5. **Payment methods and redirects:** choose the methods you want to offer, and pick the pages customers see after a successful, failed or pending payment.
 
-* Download the plugin zip file.
-* Login to your WordPress Admin. Click on \"Plugins > Add New\" from the left menu.
-* Click on the \"Upload\" option, then click \"Choose File\" to select the zip file you downloaded. Click \"OK\" and \"Install Now\" to complete the installation.
-* Activate the plugin.
-* Go to \"Rave > Settings\" from the left menu to configure the plugin.
-* For FTP manual installation, check here.
+Now add a Flutterwave block or shortcode to any page. To try it first, use your test keys (they start with `FLWPUBK_TEST-`), and switch to live keys when you're ready.
 
-For FTP manual installation, [check here](http://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation).
+You can change any setting later from the **General**, **API & Webhook**, **Payment Methods** and **Redirects** tabs.
 
-= Configuration options =
+= Manual installation =
 
-* Pay Button Public Key (live/Test) - Enter your public key which can be retrieved from Settings > API on your Rave account dashboard.
-* Pay Button Secret Key (live/Test) - Enter your secret key which can be retrieved from Settings > API on your Rave account dashboard.
-* Go Live - Tick that section to turn your rave plugin live.
-* Modal Title - (Optional) customize the title of the Pay Modal. Default is FLW PAY.
-* Modal Description - (Optional) customize the description on the Pay Modal. Default is FLW PAY MODAL.
-* Modal Logo - (Optional) customize the logo on the Pay Modal. Enter a full url (with \'http\'). Default is Rave logo.
-* Success Redirect URL - (Optional) The URL the user should be redirected to after a successful payment. Enter a full url (with 'http:\\'). Default: '\'.
-* Failed Redirect URL - (Optional) The URL the user should be redirected to after a failed payment. Enter a full url (with 'http:\\'). Default: '\'.
-* Pay Button Text - (Optional) The text to display on the button. Default: "PAY NOW".
-* Charge Currency - (Optional) The currency the user is charged. Default: "NGN".
-* Charge Country - (Optional) The country the merchant is serving. Default: "NG: Nigeria".
-* Form Style - (Optional) Disable form default style and use the activated theme style instead.
-* Click Save Changes to save your changes.
+Download the plugin zip, go to **Plugins > Add New > Upload Plugin**, choose the file and click **Install Now**, then activate it and follow the steps above.
 
-= Styling =
+== Frequently Asked Questions ==
 
-You can enable default theme's style to override default form style from the Settings page. Or you can override the formclass .flw-simple-pay-now-form from your stylesheet.
+= Do I need a Flutterwave account? =
 
-= Usage =
+Yes. Payments go to your Flutterwave account. [Sign up here](https://app.flutterwave.com/register). It's free to create an account, and you can test straight away.
 
-* a. Shortcode
-Insert the shortcode anywhere on your page or post that you want the form to be displayed to the user.
-Basic: requires the user to enter amount and email to complete payment
-[flw-pay-button]
+= How much does it cost? =
 
+The plugin is free. Flutterwave charges a fee on each successful payment. See the pricing page for your country on [flutterwave.com](https://flutterwave.com).
 
-With button text:
-[flw-pay-button]Button Text[/flw-pay-button]
+= Can I test without real money? =
 
+Yes. Enter your test keys (`FLWPUBK_TEST-…` and `FLWSECK_TEST-…`) and the plugin shows that it's in test mode. Pay with one of Flutterwave's [test cards](https://developer.flutterwave.com/docs/testing); no real money moves.
 
-With attributes: email or use_current_user_email with value "yes", amount
-[flw-pay-button amount="1290" email="customer@email.com" ]
+= Which currencies and countries are supported? =
 
-or
+Forms can charge in NGN, GHS, KES, ZAR, TZS, UGX, RWF, ZMW, USD, GBP and EUR. Which payment methods your customers see depends on the currency and their country. Mobile money, for example, is offered in the countries where it's available.
 
-[flw-pay-button amount="1290" use_current_user_email="yes" ]
+= My form isn't showing on the page. Why? =
 
+A form appears once your API keys and all three redirect pages (success, failed and pending) are saved. Until then, editors see a short notice with a link to the setting that's missing, and visitors see nothing.
 
-With attributes and button text: email, amount
-[flw-pay-button amount="1290" email="customer@email.com" ]Button Text[/flw-pay-button]
+= Why do I need a webhook? =
 
+A webhook lets Flutterwave tell your site when a payment finishes, even if the customer closes the browser before returning to your site. Copy the webhook URL and secret hash from **Flutterwave > Settings > API & Webhook** into **Settings > Webhooks** in your Flutterwave dashboard. Without a secret hash, webhooks are refused.
 
+= Can I take recurring payments? =
 
-With currency
+Donation forms let donors give monthly or yearly. The plugin creates the payment plan on Flutterwave for you.
 
-[flw-pay-button custom_currency="NGN,GBP,USD"]
+= Does it work with WooCommerce? =
 
-With attributes: email or use_current_user_email with value "yes", amount and currency
-[flw-pay-button amount="1290" email="customer@email.com" custom_currency= "NGN, GBP, USD" ]
+Yes. Install the official Flutterwave WooCommerce extension from **Flutterwave > Integrations**. For downloads and donations, the Easy Digital Downloads and GiveWP gateways are built into this plugin.
 
-or
+= Where do I see my payments? =
 
-[flw-pay-button amount="1290" use_current_user_email="yes" custom_currency= "NGN, GBP, USD" ]
+Under **Flutterwave > Transactions**. You can filter, check a payment again with Flutterwave, delete records and download a CSV. **Flutterwave > Payment Forms** shows what each form has taken. Your Flutterwave dashboard is always the final record.
 
-With currency:
-[flw-pay-button custom_currency="NGN,GBP,USD"]
+= Can I match the forms to my theme? =
 
-With attributes: email or use_current_user_email with value "yes", amount and currency
-[flw-pay-button amount="1290" email="customer@email.com" custom_currency= "NGN, GBP, USD" ]
+Yes. Blocks have colour, button text colour and corner radius controls. To use your theme's styles instead, turn on the theme style option under **Payment Methods** in the settings. Developers can also target `.flw-simple-pay-now-form` in CSS.
 
-or
+= Something went wrong. Where can I get help? =
 
-[flw-pay-button amount="1290" use_current_user_email="yes" custom_currency= "NGN, GBP, USD" ]
-
-
-* b. Visual Composer
-The shortcode can be added via Visual Composer elements.
-On Visual Composer Add Element dialog, click on "Rave Forms" and select the type of form you want to include on your page.
-
-
-On the "Form Settings" dialog, fill in the form attributes and click "Save Changes".
-
-Payment Form successfully added to the page.
-
-= Best Practices =
-1. When in doubt about a transaction, always check the Flutterwave Dashboard to confirm the status of a transaction.
-2. Always ensure you keep your API keys securely and privately. Do not share with anyone
-3. Ensure you change from the default secret hash on the Wordpress admin and apply same on the Flutterwave Dashboard
-4. Always ensure you install the most recent version of the Flutterwave Wordpress plugin
-
-= Debugging Errors =
-
-We understand that you may run into some errors while integrating our plugin. You can read more about our error messages [here](https://developer.flutterwave.com/docs/integration-guides/errors).
-
-For `authorization` and `validation` error responses, double-check your API keys and request. If you get a `server` error, kindly engage the team for support.
-
-
-= Support =
-
-For additional assistance using this library, contact the developer experience (DX) team via [email](mailto:developers@flutterwavego.com) or on [slack](https://bit.ly/34Vkzcg).
-
-You can also follow us [@FlutterwaveEng](https://twitter.com/FlutterwaveEng) and let us know what you think ðŸ˜Š.
-
-= Contribution guidelines =
-
-We love to get your input. Read more about our community contribution guidelines [here](/CONTRIBUTING.md)
-
-= License =
-
-By contributing to the Flutterwave WooCommerce, you agree that your contributions will be licensed under its [MIT license](/LICENSE).
+Check your API keys first. Most `authorization` and `validation` errors come from a missing key or a test/live mix-up. For anything else, email [developers@flutterwavego.com](mailto:developers@flutterwavego.com) or open an issue on [GitHub](https://github.com/Flutterwave/WordPress-v2/issues).
 
 == External services ==
 
@@ -181,23 +178,42 @@ Both services are covered by Flutterwave's [Terms of Service](https://flutterwav
 6. Add a payment form to any page with the [flw-pay-form] shortcode.
 7. Collect one-off or recurring donations with the [flw-donation-form] shortcode.
 
-
-
 == Changelog ==
-v1.0.3
-* This version allows you to add additional fields to the form.
-* This version allow you to set default values to fields.
-* This version allows you to hid fields "By appending '-h' to the name of the field".
-* This version now allow for mobile money option in UGx,TZS,GHS respectively
-v1.0.2
-*Recuring payment section add under "Payment Plan"
-v 1.0.1
-* Recurring payments now enabled.
 
-v 1.0.0
+= 1.1.0 =
+* New: guided onboarding and a redesigned tabbed settings screen with webhook setup and test/live key detection.
+* New: Payment Button, Payment Form, Donation Form, Pricing Card and Accepted Payment Methods blocks.
+* New: Payment Forms screen showing every form in use, the page it is on and the payments it has taken, plus a form builder.
+* New: redesigned Transactions screen with filters, a details drawer and CSV export for a date range.
+* New: Easy Digital Downloads and GiveWP gateways, and one-click install of the Flutterwave WooCommerce extension.
+* New: choose which payment methods are offered at checkout.
+* New: more shortcode options for headings, descriptions, layout, suggested donation amounts and currency.
+* Changed: payment and donation forms use the new Flutterwave design, and styles only load on pages with a form.
+* Security: payment amount and currency are enforced on the server, and transactions are verified against the stored record.
+* Security: webhooks are rejected unless a secret hash is configured.
+* Security: fixed stored XSS in shortcode attributes and the transactions list; added checkout rate limiting.
+* Fixed: checkout errors are now shown to customers, and name fields are shown on the payment form again.
+* Fixed: translations loading too early on WordPress 6.7+.
+
+= 1.0.3 =
+* Add extra fields to the form.
+* Set default values for fields.
+* Hide a field by adding "-h" to its name.
+* Mobile money for UGX, TZS and GHS.
+
+= 1.0.2 =
+* Recurring payments section added under "Payment Plan".
+
+= 1.0.1 =
+* Recurring payments enabled.
+
+= 1.0.0 =
+* First release.
 
 == Upgrade Notice ==
-v1.0.1 - 12-02-2018
-* This version doesn't redirect after failure, it allows the customer try payment again.
-* This version allows you use multiple currencies on the Wordpress payment form.
-* This version now has recurring payments.
+
+= 1.1.0 =
+Security release. Webhooks are now rejected unless a secret hash is set: after updating, add one under Flutterwave > Settings and in your Flutterwave dashboard.
+
+= 1.0.1 =
+Failed payments no longer redirect, so customers can try again. Adds multiple currencies and recurring payments.

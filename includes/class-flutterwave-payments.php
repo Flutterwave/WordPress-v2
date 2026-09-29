@@ -26,7 +26,7 @@ final class Flutterwave_Payments {
 	 *
 	 * @var string $plugin_version
 	 */
-	private string $plugin_version = '1.0.7';
+	private string $plugin_version = '1.1.0';
 
 	/**
 	 * Allowed donation payment types.

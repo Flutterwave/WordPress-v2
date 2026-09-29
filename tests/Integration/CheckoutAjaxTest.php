@@ -30,6 +30,12 @@ class CheckoutAjaxTest extends \WP_Ajax_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Core update checks run on admin_init; with HTTP blocked below, older
+		// WordPress (6.4) raises an E_USER_WARNING that fails the test.
+		remove_action( 'admin_init', '_maybe_update_core' );
+		remove_action( 'admin_init', '_maybe_update_plugins' );
+		remove_action( 'admin_init', '_maybe_update_themes' );
+
 		update_option(
 			'flw_rave_options',
 			array(

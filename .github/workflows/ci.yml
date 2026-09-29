@@ -97,7 +97,7 @@ jobs:
             WP_ENV_PHP_VERSION: ${{ matrix.php }}
             # '' is falsy in expressions, so the branch must be the && operand, not the || fallback.
             WP_ENV_CORE: ${{ matrix.wp != 'latest' && format('WordPress/WordPress#{0}-branch', matrix.wp) || '' }}
-            # Only the tests site is used here; EDD and GiveWP require newer WordPress than the matrix floor.
+            # Only the tests site is used here; the EDD and GiveWP activation in .wp-env.json is for e2e.
             WP_ENV_LIFECYCLE_SCRIPT_AFTER_START: wp-env run tests-cli wp plugin activate rave-payment-forms
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -113,6 +113,9 @@ jobs:
             - run: npm ci --ignore-scripts
             # build/ is not committed; without it the admin app tests are skipped.
             - run: npm run build:admin
+            # wp-env activates every listed plugin on start, and EDD/GiveWP require newer WordPress than the matrix floor.
+            - run: |
+                  echo '{ "plugins": [] }' > .wp-env.override.json
             - run: npm run env:start
             - run: npm run test:integration
 

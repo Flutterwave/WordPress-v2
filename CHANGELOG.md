@@ -1,5 +1,5 @@
 # Changelog
-## Unreleased
+## 1.1.0 | 29-09-2026
 
 ### Added
 - New onboarding flow for first-time setup (welcome, general details, API & webhook, payment methods, redirects), matching the Flutterwave WooCommerce plugin.

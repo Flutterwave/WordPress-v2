@@ -20,7 +20,7 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 }
 
 if ( ! defined( 'FLW_PAY_VERSION' ) ) {
-	define( 'FLW_PAY_VERSION', '1.0.7' );
+	define( 'FLW_PAY_VERSION', '1.1.0' );
 }
 
 if ( ! defined( 'FLW_PAY_PLUGIN_FILE' ) ) {

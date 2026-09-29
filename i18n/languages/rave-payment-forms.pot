@@ -2,7 +2,7 @@
 # This file is distributed under the MIT License.
 msgid ""
 msgstr ""
-"Project-Id-Version: Flutterwave Payments 1.0.7\n"
+"Project-Id-Version: Flutterwave Payments 1.1.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/rave-payment-forms\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
