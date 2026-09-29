@@ -209,9 +209,7 @@ final class FLW_Forms_Controller {
 			return array();
 		}
 
-		$in = implode( ',', array_fill( 0, count( $page_ids ), '%s' ) );
-
-		// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders are built above.
+		// Ids are passed as one comma-separated placeholder so no SQL is built from input.
 		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- admin-only aggregate.
 			$wpdb->prepare(
 				"SELECT s.meta_value AS source, c.meta_value AS currency, COUNT(*) AS payments, SUM(CAST(a.meta_value AS DECIMAL(20,2))) AS total
@@ -220,13 +218,14 @@ final class FLW_Forms_Controller {
 				INNER JOIN {$wpdb->postmeta} st ON st.post_id = p.ID AND st.meta_key = '_flw_rave_payment_status' AND st.meta_value = 'successful'
 				LEFT JOIN {$wpdb->postmeta} c ON c.post_id = p.ID AND c.meta_key = '_flw_rave_payment_currency'
 				LEFT JOIN {$wpdb->postmeta} a ON a.post_id = p.ID AND a.meta_key = '_flw_rave_payment_amount'
-				WHERE p.post_type = %s AND s.meta_value IN ($in)
+				WHERE p.post_type = %s AND FIND_IN_SET(s.meta_value, %s)
 				GROUP BY s.meta_value, c.meta_value",
-				array_merge( array( FLW_Payments_Controller::SOURCE_META, FLW_Payment_Record::POST_TYPE ), array_map( 'strval', $page_ids ) )
+				FLW_Payments_Controller::SOURCE_META,
+				FLW_Payment_Record::POST_TYPE,
+				implode( ',', $page_ids )
 			),
 			ARRAY_A
 		);
-		// phpcs:enable
 
 		$stats = array();
 
