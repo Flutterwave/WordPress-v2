@@ -439,13 +439,13 @@ class FLW_Admin_Settings {
 	}
 
 	/**
-	 * The Flutterwave mark for the admin menu, as an SVG data URI WordPress recolours to match the admin scheme.
+	 * The full-colour Flutterwave icon for the admin menu, sized 20x20.
+	 *
+	 * A file URL renders as an <img>; wp-admin's svg-painter only recolours data URIs.
 	 *
 	 * @return string
 	 */
 	private static function menu_icon(): string {
-		$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path fill="black" d="M10.4 3.1c3-1.7 6.8-.6 8.4 2.4 1.6 3 .4 6.8-2.6 8.5l-6.6 3.7c-3 1.7-6.8.6-8.4-2.4-1.6-3-.4-6.8 2.6-8.5l6.6-3.7Zm-3 4.1a2.8 2.8 0 1 0 2.7 4.9 2.8 2.8 0 0 0-2.7-4.9Z"/></svg>';
-
-		return 'data:image/svg+xml;base64,' . base64_encode( $svg ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- data URI for the admin menu icon.
+		return FLW_DIR_URL . 'assets/images/admin/flutterwave-icon.svg';
 	}
 }

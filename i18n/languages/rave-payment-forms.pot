@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T16:09:00+00:00\n"
+"POT-Creation-Date: 2026-10-08T14:23:54+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: rave-payment-forms\n"
@@ -130,15 +130,15 @@ msgstr ""
 msgid "Get started"
 msgstr ""
 
-#: includes/admin/class-flw-forms-controller.php:295
+#: includes/admin/class-flw-forms-controller.php:303
 msgid "(no title)"
 msgstr ""
 
-#: includes/admin/class-flw-forms-controller.php:344
+#: includes/admin/class-flw-forms-controller.php:352
 msgid "Unknown form type."
 msgstr ""
 
-#: includes/admin/class-flw-forms-controller.php:356
+#: includes/admin/class-flw-forms-controller.php:364
 #: build/blocks.js:1
 #: client/blocks/edit/payment-button.js:26
 msgid "Payment"
