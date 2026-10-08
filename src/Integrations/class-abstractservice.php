@@ -80,14 +80,14 @@ abstract class AbstractService {
 	 *
 	 * @return array
 	 */
-	abstract public function get_info() : array;
+	abstract public function get_info(): array;
 
 	/**
 	 * Get Header.
 	 *
 	 * @return array
 	 */
-	abstract protected function get_headers() : array;
+	abstract protected function get_headers(): array;
 
 	/**
 	 * Service Constructor.
@@ -105,7 +105,7 @@ abstract class AbstractService {
 	 *
 	 * @return void
 	 */
-	public function set_key( string $key ):void {
+	public function set_key( string $key ): void {
 		$this->api_key = $key;
 	}
 
@@ -155,8 +155,7 @@ abstract class AbstractService {
 		return \WP_Error(
 			'flw-unavailable',
 			/* translators: %s: owner's name, %s: service name */
-			 sprintf( '%s \'s  %s service is currently unavailable. please use another integration.', $this->owner, $this->name )
+			sprintf( '%s \'s  %s service is currently unavailable. please use another integration.', $this->owner, $this->name )
 		);
 	}
-
 }

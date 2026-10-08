@@ -1,134 +1,206 @@
-var pp;
+jQuery( function ( $ ) {
+	const options = window.flw_pay_options;
 
-jQuery(function ($) {
 	/**
-	 * Builds config object to be sent to GetPaid
+	 * Reads a data-* attribute as a raw string.
 	 *
-	 * @return object - The config object
+	 * @param {jQuery} form The form element.
+	 * @param {string} name Attribute name without the data- prefix.
+	 * @return {string|undefined} The attribute value.
 	 */
-	const buildConfigObj = function (form) {
-		let formData = $(form).data();
-		let amount = formData.amount?.replace(/"|'/g, '') || $(form).find('#flw-amount').val();
-		let email = formData.email?.replace(/"|'/g, '') || $(form).find('#flw-customer-email').val();
-		let firstname =
-			formData.firstname?.replace(/"|'/g, '') || $(form).find('#flw-first-name').val();
-		let lastname =
-			formData.lastname?.replace(/"|'/g, '') || $(form).find('#flw-last-name').val();
-		let formCurrency =
-			formData.currency?.replace(/"|'/g, '') || $(form).find('#flw-currency').val();
-		let formId = form.attr('id');
-		let txref = 'WP_' + formId.toUpperCase() + '_' + new Date().valueOf();
-		let setCountry; //set country
+	const readAttr = function ( form, name ) {
+		const value = $( form ).attr( 'data-' + name );
+		return value === undefined || value === '' ? undefined : value;
+	};
 
-		//switch the country with form currency provided
-		setCountry = flw_pay_options.countries[formCurrency]
-			? flw_pay_options.countries[formCurrency]
-			: flw_pay_options.countries['NGN'];
+	/**
+	 * The fixed amount from data-amount, or the amount the customer typed.
+	 *
+	 * @param {jQuery} form The form element.
+	 * @return {string|undefined} The amount to charge.
+	 */
+	const amountFor = function ( form ) {
+		const fixed = readAttr( form, 'amount' );
 
-		let redirect_url = window.location.origin;
+		// "0" or an empty attribute means the customer chooses the amount.
+		if ( fixed !== undefined && parseFloat( fixed ) > 0 ) {
+			return fixed;
+		}
+
+		return $( form ).find( '#flw-amount' ).val();
+	};
+
+	/**
+	 * Shows a checkout error.
+	 *
+	 * @param {jQuery} form    The form element.
+	 * @param {string} message The message to show.
+	 */
+	const showError = function ( form, message ) {
+		errorBox( form ).text( message ).addClass( 'is-visible' );
+		$( form ).find( 'button' ).prop( 'disabled', false );
+	};
+
+	/**
+	 * The error box belonging to a form.
+	 *
+	 * @param {jQuery} form The form element.
+	 * @return {jQuery} The error box.
+	 */
+	const errorBox = function ( form ) {
+		return $( form )
+			.closest( '.flutterwave-payment-form, .flutterwave-donation-form' )
+			.find( '.flw-error' );
+	};
+
+	/**
+	 * Builds the checkout request.
+	 *
+	 * @param {jQuery} form The form element.
+	 * @return {Object} The checkout request.
+	 */
+	const buildConfigObj = function ( form ) {
+		const amount = amountFor( form );
+		const email =
+			readAttr( form, 'email' ) ||
+			$( form ).find( '#flw-customer-email' ).val();
+		const firstname =
+			readAttr( form, 'firstname' ) ||
+			$( form ).find( '#flw-first-name' ).val();
+		const lastname =
+			readAttr( form, 'lastname' ) ||
+			$( form ).find( '#flw-last-name' ).val();
+		const formCurrency =
+			readAttr( form, 'currency' ) ||
+			$( form ).find( '#flw-currency' ).val();
+		const formId = form.attr( 'id' );
+		const txref = 'WP_' + formId.toUpperCase() + '_' + new Date().valueOf();
+		// Switch the country with the form currency provided.
+		const country = options.countries[ formCurrency ]
+			? options.countries[ formCurrency ]
+			: options.countries.NGN;
 
 		return {
-			amount: amount,
-			country: setCountry, //flw_pay_options.country,
-			currency: formCurrency ?? flw_pay_options.currency,
+			amount,
+			country,
+			currency: formCurrency ?? options.currency,
 			customer: {
 				email,
 				phone_number: null,
 				name: firstname + ' ' + lastname,
 			},
-			payment_options: flw_pay_options.method,
-			public_key: flw_pay_options.public_key,
+			payment_options: options.method,
+			public_key: options.public_key,
 			tx_ref: txref,
 			customizations: {
-				title: flw_pay_options.title,
-				description: flw_pay_options.desc,
-				logo: flw_pay_options.logo,
+				title: options.title,
+				description: options.desc,
+				logo: options.logo,
 			},
 			form_id: formId,
 		};
 	};
 
-	const processCheckout = function (opts, form) {
-		let args = {
+	const processCheckout = function ( opts, form ) {
+		const args = {
 			action: 'get_payment_url',
-			flw_sec_code: $(form).find('#flw_sec_code').val(),
-			payment_type: $(form).find('#flw-payment-type').val(),
+			flw_sec_code: $( form ).find( '#flw_sec_code' ).val(),
+			payment_type: $( form ).find( '#flw-payment-type' ).val(),
+			flw_form_config: $( form )
+				.find( 'input[name="flw_form_config"]' )
+				.val(),
+			flw_form_sig: $( form ).find( 'input[name="flw_form_sig"]' ).val(),
 		};
 
-		let dataObj = Object.assign({}, args, opts);
-		$.post(flw_pay_options.cb_url, dataObj).success(function (data) {
-			let response = data;
+		const dataObj = Object.assign( {}, args, opts );
+		$.post( options.cb_url, dataObj )
+			.done( function ( data ) {
+				const response = data;
 
-			if (response.status === 'error') {
-				$('.flw-error')
-					.html(response.message)
-					.attr('style', 'color:red');
-			} else {
-				let flw_overlay = $('#flutterwave-overlay');
-				flw_overlay.addClass('flutterwave-overlay');
-				$('#flw-overlay-text').addClass('flw-overlay-text');
-				flw_overlay.show();
-				redirectTo(response.url);
-			}
-		});
+				if ( response.status === 'error' ) {
+					showError( form, response.message );
+				} else {
+					const overlay = $( '#flutterwave-overlay' );
+					overlay.addClass( 'flutterwave-overlay' );
+					$( '#flw-overlay-text' ).addClass( 'flw-overlay-text' );
+					overlay.show();
+					redirectTo( response.url );
+				}
+			} )
+			.fail( function ( xhr ) {
+				showError(
+					form,
+					( xhr.responseJSON && xhr.responseJSON.message ) ||
+						'Unable to start the payment. Please try again.'
+				);
+			} );
 	};
 
 	/**
-	 * Redirect to set url
+	 * Redirect to a url.
 	 *
-	 * @param string url - The link to redirect to
-	 *
-	 * @return void
+	 * @param {string} url The link to redirect to.
 	 */
-	const redirectTo = function (url) {
-		if (url) {
+	const redirectTo = function ( url ) {
+		if ( url ) {
 			location.href = url;
 		}
 	};
 
 	// for each form process payments
-	$('.flw-donation-form').each(function () {
-		let form = $(this);
+	$( '.flw-donation-form' ).each( function () {
+		const form = $( this );
 
-		form.find('#flw-payment-type').on('change', function () {
-			let option = $(this).val();
-			let btn = jQuery('.flw-donation-form').find('#flw-pay-now-button');
-			let fullText = 'DONATE ' + option.toUpperCase();
-			btn.text(null);
-			console.log(btn.text());
-			btn.text(fullText);
-		});
+		form.find( '#flw-payment-type' ).on( 'change', function () {
+			const option = $( this ).val();
+			form.find( '#flw-pay-now-button' ).text( 'Donate ' + option );
+		} );
 
-		form.on('submit', function (event) {
+		// Suggested amounts fill the amount field; typing clears the selection.
+		const presets = form.find( '.flw-amount-preset' );
+		presets.on( 'click', function () {
+			presets
+				.removeClass( 'is-selected' )
+				.attr( 'aria-pressed', 'false' );
+			$( this ).addClass( 'is-selected' ).attr( 'aria-pressed', 'true' );
+			form.find( '#flw-amount' ).val( $( this ).data( 'amount' ) );
+		} );
+		form.find( '#flw-amount' ).on( 'input', function () {
+			presets
+				.removeClass( 'is-selected' )
+				.attr( 'aria-pressed', 'false' );
+		} );
+
+		form.on( 'submit', function ( event ) {
 			event.preventDefault(); // Prevent the default form submission
-			let btn = form.find('button');
-			btn.prop('disabled', true);
+			errorBox( form ).removeClass( 'is-visible' ).text( '' );
+			const btn = form.find( 'button' );
+			btn.prop( 'disabled', true );
 
-			let inputs = form.find('input[type="text"]');
+			const inputs = form.find( 'input[type="text"]' );
 			let isValid = true;
 
-			inputs.each(function () {
-				let inputValue = $(this).val();
+			inputs.each( function () {
+				const inputValue = $( this ).val();
 				if (
 					typeof inputValue === 'string' &&
 					inputValue.trim() === ''
 				) {
 					isValid = false;
-					$(this).attr('style', 'border-color: red');
+					$( this ).attr( 'style', 'border-color: red' );
 				} else {
-					$(this).attr('style', 'border-color: green');
+					$( this ).attr( 'style', 'border-color: green' );
 				}
-			});
+			} );
 
-			if (isValid) {
-				let config = buildConfigObj(form);
-				console.log(config);
-				processCheckout(config, form);
+			if ( isValid ) {
+				const config = buildConfigObj( form );
+				processCheckout( config, form );
 			} else {
 				//unblur button.
-				btn.effect('shake', { times: 2 }, 300);
-				btn.prop('disabled', false);
+				btn.effect( 'shake', { times: 2 }, 300 );
+				btn.prop( 'disabled', false );
 			}
-		});
-	});
-});
+		} );
+	} );
+} );

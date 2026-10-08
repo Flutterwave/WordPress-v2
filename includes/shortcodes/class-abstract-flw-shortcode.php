@@ -7,10 +7,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedClassFound -- public class name kept for backwards compatibility.
 /**
  * Abstract Shortcode.
  */
 abstract class Abstract_FLW_Shortcode {
+	// phpcs:enable
 
 	/**
 	 * Shortcode type.
@@ -105,7 +107,6 @@ abstract class Abstract_FLW_Shortcode {
 	protected static function use_current_user_email( $attr ): bool {
 
 		return isset( $attr['use_current_user_email'] ) && 'yes' === $attr['use_current_user_email'];
-
 	}
 
 	/**
@@ -173,7 +174,7 @@ abstract class Abstract_FLW_Shortcode {
 				'id'          => 'flw-customer-email',
 				'name'        => 'email',
 				'class'       => 'flw-form-input-text',
-				'type'        => 'text',
+				'type'        => 'email',
 				'placeholder' => __( 'Email', 'rave-payment-forms' ),
 			),
 			'amount'          => array(
@@ -202,28 +203,28 @@ abstract class Abstract_FLW_Shortcode {
 				'name'        => 'fullname',
 				'class'       => 'flw-form-input-text',
 				'type'        => 'text',
-				'placeholder' => __( 'Full Name', 'rave-payment-forms' ),
+				'placeholder' => __( 'Full name', 'rave-payment-forms' ),
 			),
 			'phone'           => array(
 				'id'          => 'flw-phone',
 				'name'        => 'phone',
 				'class'       => 'flw-form-input-text',
 				'type'        => 'tel',
-				'placeholder' => __( 'Phone Number', 'rave-payment-forms' ),
+				'placeholder' => __( 'Phone number', 'rave-payment-forms' ),
 			),
 			'firstname'       => array(
 				'id'          => 'flw-first-name',
 				'name'        => 'firstname',
 				'class'       => 'flw-form-input-text',
 				'type'        => 'text',
-				'placeholder' => __( 'First Name', 'rave-payment-forms' ),
+				'placeholder' => __( 'First name', 'rave-payment-forms' ),
 			),
 			'lastname'        => array(
 				'id'          => 'flw-last-name',
 				'name'        => 'lastname',
 				'class'       => 'flw-form-input-text',
 				'type'        => 'text',
-				'placeholder' => __( 'Last Name', 'rave-payment-forms' ),
+				'placeholder' => __( 'Last name', 'rave-payment-forms' ),
 			),
 			'country'         => 'text',
 		);
@@ -236,13 +237,63 @@ abstract class Abstract_FLW_Shortcode {
 	}
 
 	/**
+	 * Build the form's data-* attributes, escaping each key and value.
+	 *
+	 * @param array $atts   Shortcode attributes.
+	 * @param array $skip   Attribute keys to leave out.
+	 *
+	 * @return string
+	 */
+	protected static function build_data_attributes( array $atts, array $skip = array() ): string {
+		$data_attr = '';
+		foreach ( $atts as $att_key => $att_value ) {
+			if ( is_array( $att_value ) || in_array( $att_key, $skip, true ) ) {
+				continue;
+			}
+
+			// data-amount marks a fixed price. An open-amount form must not carry
+			// one, or the script would send it instead of what the customer typed.
+			if ( 'amount' === $att_key && ! ( is_numeric( $att_value ) && (float) $att_value > 0 ) ) {
+				continue;
+			}
+
+			if ( is_bool( $att_value ) ) {
+				$att_value = $att_value ? '1' : '';
+			}
+
+			$data_attr .= ' data-' . sanitize_key( $att_key ) . '="' . esc_attr( (string) $att_value ) . '"';
+		}
+		return $data_attr;
+	}
+
+	/**
+	 * Hidden fields carrying the signed amount/currency rules for this form.
+	 *
+	 * @param mixed  $amount     The fixed amount, or 0 when the customer chooses.
+	 * @param string $currencies Comma separated list of accepted currencies.
+	 *
+	 * @return string
+	 */
+	protected static function get_signed_config_fields( $amount, string $currencies ): string {
+		$config = FLW_Form_Config::sign(
+			is_numeric( $amount ) ? (float) $amount : 0.0,
+			FLW_Form_Config::parse_currencies( $currencies, array_keys( self::get_supported_country() ) )
+		);
+
+		return '<input type="hidden" name="flw_form_config" value="' . esc_attr( $config['payload'] ) . '" />'
+			. '<input type="hidden" name="flw_form_sig" value="' . esc_attr( $config['signature'] ) . '" />';
+	}
+
+	/**
 	 * Get allowed html for kses function.
 	 *
 	 * @return array
 	 */
 	protected static function get_allowed_html() {
 		return array(
-			'div'    => array(),
+			'div'    => array(
+				'class' => array(),
+			),
 			'input'  => array(
 				'id'          => array(),
 				'class'       => array(),
@@ -260,6 +311,7 @@ abstract class Abstract_FLW_Shortcode {
 			),
 			'label'  => array(
 				'class' => array(),
+				'for'   => array(),
 			),
 		);
 	}

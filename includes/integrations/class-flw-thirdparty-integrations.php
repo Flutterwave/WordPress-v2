@@ -100,8 +100,8 @@ class FLW_Thirdparty_Integrations {
 
 					self::$integrations[ $owner ][ $name ] = $service;
 				}
-			}
-		}
+			}//end if
+		}//end foreach
 	}
 
 	/**

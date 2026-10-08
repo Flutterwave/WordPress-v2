@@ -82,4 +82,4 @@ if ( ! class_exists( 'FLW_Tinymce_Plugin' ) ) {
 			return self::$instance;
 		}
 	}
-}
+}//end if

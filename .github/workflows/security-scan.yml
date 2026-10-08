@@ -7,6 +7,9 @@ on:
     types:
       - opened
 
+permissions:
+  contents: read
+
 jobs:
   code-check:
     runs-on: ubuntu-latest
@@ -14,10 +17,9 @@ jobs:
       OS: ubuntu-latest
     steps:
       - name: checkout code
-        uses: actions/checkout@v2
-
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Checkmarx One ClI Action
-        uses: checkmarx/ast-github-action@main
+        uses: checkmarx/ast-github-action@882c03f380f4bdddae2d068540cbd73efe0796ac # main
         with:
           project_name: WordPress
           cx_tenant: Flutterwave

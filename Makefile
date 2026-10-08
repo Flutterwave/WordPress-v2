@@ -13,17 +13,26 @@ down:
 	docker-compose -f .docker/docker-compose.yml  down
 
 
-dev-js:
-	npm run start
+env-start:
+	npm run env:start
+
+env-stop:
+	npm run env:stop
+
+test:
+	npm test
+
+test-unit:
+	npm run test:unit
+
+lint:
+	npm run lint
+
+audit:
+	npm run audit
 
 build-production-js:
 	npm run preuglify && npm run uglify
-
-build-production-docs:
-	npm run docs:build
-
-dev-docs:
-	npm run docs:dev
 
 wp-format:
 	npm run format
@@ -35,7 +44,7 @@ zip:
 	rm rave-payment-forms.zip && npm run plugin-zip
 
 inspection:
-	./vendor/bin/phpcs -p . --standard=PHPCompatibilityWP
+	composer run phpcompatibility:check
 
 build:
 	npm run build

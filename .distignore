@@ -37,4 +37,20 @@ playwright.config.js
 /node_modules
 /vendor
 rave-payment-forms.zip
-
+/client
+eslint.config.cjs
+phpcs.xml.dist
+phpunit.xml.dist
+phpunit-integration.xml.dist
+.npmpackagejsonlintrc.json
+/coverage
+/playwright-report
+/test-results
+/.phpunit.cache
+# Old integrations scaffolding, replaced by includes/integrations/class-flw-integrations.php.
+src/Integrations
+includes/integrations/class-flw-thirdparty-integrations.php
+views/admin-integrations-page.php
+assets/css/admin
+assets/js/admin
+/test-reports

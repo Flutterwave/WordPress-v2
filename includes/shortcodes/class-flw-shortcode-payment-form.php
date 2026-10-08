@@ -83,8 +83,7 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 	 */
 	protected function parse_attributes( array $attributes = array() ): array {
 		$email                      = self::use_current_user_email( $attributes ) ? wp_get_current_user()->user_email : '';
-		$admin_payment_method       = $this->settings->get_option_value( 'method' );
-		$payment_method             = self::get_payment_options()[ $admin_payment_method ] ?? self::get_payment_options()['all'];
+		$payment_method             = FLW_Settings::payment_options();
 		$this->allowed_to_exclude[] = 'phone';
 		$default_fields_order       = 'email,fullname,phone,amount,currency';
 		$custom_currency            = '';
@@ -120,13 +119,14 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 		if ( isset( $attributes['exclude'] ) ) {
 			// trim spaces of each word.
 			$proposed_fields = array_map(
-				function( string $item ) {
+				function ( string $item ) {
 					return trim( $item );
 				},
 				explode( ',', $attributes['exclude'] )
 			);
 
-			foreach ( $this->allowed_to_exclude  as $keyword ) {
+			// The name field can be left out too (e.g. the compact payment button).
+			foreach ( array_merge( $this->allowed_to_exclude, array( 'fullname' ) ) as $keyword ) {
 				if ( in_array( $keyword, $proposed_fields, true ) ) {
 					$attributes[ 'should_collect_' . $keyword ]     = 0;
 					$default_config[ 'should_collect_' . $keyword ] = 0;
@@ -168,11 +168,21 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 				'email'           => $email,
 				'custom_fields'   => $custom_fields,
 				'order'           => $default_fields_order,
+				'heading'         => '',
+				'description'     => '',
+				'layout'          => 'card',
+				'width'           => 'auto',
+				'show_secured'    => '1',
 			),
 			$default_config
 		);
 
-		return shortcode_atts( $defaults, $attributes, $this->type );
+		$atts = shortcode_atts( $defaults, $attributes, $this->type );
+
+		// Shortcode values arrive as strings; the renderer compares against integers.
+		$atts['split_name'] = (int) (bool) $atts['split_name'];
+
+		return $atts;
 	}
 
 	/**
@@ -252,7 +262,7 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 		$currencies = explode( ',', $custom_currency );
 
 		if ( is_array( $field ) && isset( $field['type'] ) && 'select' === $field['type'] ) {
-			$html_array[] = '<label class="pay-now">' . esc_attr( ucfirst( $key ) ) . '</label>';
+			$html_array[] = '<label class="pay-now" for="' . esc_attr( $field['id'] ) . '">' . esc_html( $field['label'] ?? ucfirst( $key ) ) . '</label>';
 			$html_array[] = '<' . esc_html( $field['type'] ) . '  class="' . esc_html( $field['class'] ) . '" id="' . esc_html( $field['id'] ) . '" required>';
 			if ( 'custom_currency' === $field['name'] ) {
 				foreach ( $currencies as $currency ) {
@@ -286,12 +296,10 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 
 		// handle currency field: assume single currency and amount is set.
 		if ( 'custom_currency' === $field_name && 1 === count( $custom_currency_array ) && 0 !== (int) $amount ) {
-			$html_array[] = '<div class="flw_payment_overview">
-									<div class="flw_total_label">Total Amount</div>
-									<div class="flw_amount_to_pay">
-										<div>' . esc_attr( (float) $amount ) . esc_attr( $custom_currency_array[0] ) . '</div>
-									</div>
-							</div>';
+			$html_array[] = '<div class="flw_payment_overview">'
+				. '<div class="flw_total_label">' . esc_html__( 'Total amount', 'rave-payment-forms' ) . '</div>'
+				. '<div class="flw_amount_to_pay">' . esc_html( $custom_currency_array[0] . ' ' . number_format_i18n( (float) $amount, 2 ) ) . '</div>'
+				. '</div>';
 		}
 
 		// handle currency field: assume multiple currencies and amount is set.
@@ -306,20 +314,17 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 		}
 
 		// handle name split.
-		if ( 'firstname' === $field_name && 1 === $atts['split_name'] || 'lastname' === $field_name && 1 === $atts['split_name'] ) {
+		if ( ( 'firstname' === $field_name && 1 === $atts['split_name'] ) || ( 'lastname' === $field_name && 1 === $atts['split_name'] ) ) {
 			$this->handle_regular_fields( $field_name, $field, $html_array );
 		}
 
-		// handle fullname.
-		if ( 'fullname' === $field_name && 0 === $atts['split_name'] ) {
-
-			if ( ! isset( $atts['fullname'] ) ) {
-
-				$this->handle_regular_fields( $field_name, $field, $html_array );
-
+		// handle fullname: a preset name is sent from the data-fullname attribute, so no field is needed.
+		if ( 'fullname' === $field_name && ! isset( $atts['fullname'] ) && ! isset( $atts['should_collect_fullname'] ) ) {
+			if ( 1 === $atts['split_name'] ) {
+				$this->handle_regular_fields( 'firstname', $this->get_field_data_type( 'firstname' ), $html_array );
+				$this->handle_regular_fields( 'lastname', $this->get_field_data_type( 'lastname' ), $html_array );
 			} else {
-
-				$this->handle_regular_fields( $field_name, $field, $html_array, $atts['fullname'] );
+				$this->handle_regular_fields( $field_name, $field, $html_array );
 			}
 		}
 
@@ -360,23 +365,19 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 	 * @param string $key The field key.
 	 * @param array  $field The field array.
 	 * @param array  $html_array The html array.
-	 * @param string $default_value The default value.
 	 *
 	 * @return void
 	 */
-	private function handle_regular_fields( string $key, array $field, array &$html_array, string $default_value = '' ) {
-
-		if ( '' !== $default_value ) {
-			$html_array[] = '<label class="pay-now">' . esc_attr( ucfirst( $key ) ) . '</label>';
-			$html_array[] = '<input class="' . esc_attr( $field['class'] ) . '" id="' . esc_attr( $field['id'] ) . '" type="' .
-			esc_attr( $field['type'] ) . '" placeholder=" ' . esc_attr( ucfirst( $key ) ) . ' " value="' . $default_value . '" >';
-		} else {
-			if ( is_array( $field ) && isset( $field['type'] ) && 'select' !== $field['type'] ) {
-				$html_array[] = '<label class="pay-now">' . esc_attr( ucfirst( $key ) ) . '</label>';
-				$html_array[] = '<input class="' . esc_attr( $field['class'] ) . '" id="' . esc_attr( $field['id'] ) . '" type="' .
-				esc_attr( $field['type'] ) . '" placeholder=" ' . esc_attr( ucfirst( $key ) ) . ' " >';
-			}
+	private function handle_regular_fields( string $key, array $field, array &$html_array ) {
+		if ( ! isset( $field['type'] ) || 'select' === $field['type'] ) {
+			return;
 		}
+
+		$label = $field['placeholder'] ?? ucfirst( $key );
+
+		$html_array[] = '<label class="pay-now" for="' . esc_attr( $field['id'] ) . '">' . esc_html( $label ) . '</label>';
+		$html_array[] = '<input class="' . esc_attr( $field['class'] ) . '" id="' . esc_attr( $field['id'] ) . '" type="' .
+			esc_attr( $field['type'] ) . '" placeholder="' . esc_attr( $label ) . '">';
 	}
 
 	/**
@@ -400,6 +401,11 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 				continue;
 			}
 
+			// A known email (use_current_user_email) is sent from data-email, so no field is needed.
+			if ( 'email' === $key && '' !== (string) $atts['email'] ) {
+				continue;
+			}
+
 			$field = $this->get_field_data_type( $key );
 
 			if ( ! $this->is_custom_field( $key ) && ! $this->is_special_field( $field['name'] ) ) {
@@ -412,7 +418,7 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 
 				$this->handle_special_fields( $field, $atts, $html_array );
 			}
-		}
+		}//end foreach
 
 		return implode( '', $html_array );
 	}
@@ -437,19 +443,17 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 						$html_array[] = '<label class="pay-now">' . esc_attr( ucfirst( $name ) ) . '</label>';
 						$html_array[] = '<' . esc_html( $element ) . '  class="flw-form-select flw-extra-fields" id="flw-extra" required>';
 						foreach ( $option as $key => $val ) {
-							$html_array[] = '<option value="' . $val . '">' . $key . '</option>';
+							$html_array[] = '<option value="' . esc_attr( $val ) . '">' . esc_html( $key ) . '</option>';
 						}
 						$html_array[] = '</' . esc_html( $element ) . '>';
 					}
 				}
-			} else {
-				if ( ! isset( $atts[ 'should_collect_' . $name ] ) ) {
+			} elseif ( ! isset( $atts[ 'should_collect_' . $name ] ) ) {
 					$html_array[] = '<label class="pay-now">' . esc_attr( ucfirst( $name ) ) . '</label>';
 					$html_array[] = '<input class="flw-form-input-text flw-extra-fields" id="flw-extra" type="' .
-					esc_attr( $value ) . '" placeholder=" ' . esc_attr( ucfirst( $name ) ) . ' " required >';
-				}
+					esc_attr( $value ) . '" placeholder="' . esc_attr( ucfirst( $name ) ) . '" required >';
 			}
-		}
+		}//end foreach
 
 		return implode( '', $html_array );
 	}
@@ -460,22 +464,51 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 	 * @return void
 	 */
 	public function render(): void {
-		$atts      = $this->get_attributes();
-		$btn_text  = $this->button_text;
-		$data_attr = '';
-		foreach ( $atts as $att_key => $att_value ) {
-			if ( ! is_array( $att_value ) ) {
-				if ( 'amount' === $att_key && 0 === $att_value ) {
-					continue;
-				}
-				$data_attr .= ' data-' . $att_key . '="' . $att_value . '"';
-			}
+		$atts          = $this->get_attributes();
+		$btn_text      = $this->button_label( $atts );
+		$skip          = array( 'heading', 'description', 'layout', 'width', 'show_secured' );
+		$data_attr     = self::build_data_attributes( $atts, $skip );
+		$signed_config = self::get_signed_config_fields( $atts['amount'], (string) $atts['custom_currency'] );
+		$form_classes  = array( 'flutterwave-payment-form' );
+
+		if ( 'compact' === $atts['layout'] ) {
+			$form_classes[] = 'flw-layout-compact';
+		}
+
+		if ( 'full' === $atts['width'] ) {
+			$form_classes[] = 'flw-width-full';
 		}
 
 		$input_fields_html     = $this->prepare_default_fields( $atts );
 		$allowed_html_elements = self::get_allowed_html();
 
 		include FLW_DIR_PATH . 'views/pay-now-form.php';
+	}
+
+	/**
+	 * The button label, with {amount} replaced by the formatted amount.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 *
+	 * @return string
+	 */
+	private function button_label( array $atts ): string {
+		$label = (string) $this->button_text;
+
+		if ( false === strpos( $label, '{amount}' ) ) {
+			return $label;
+		}
+
+		$amount     = is_numeric( $atts['amount'] ) ? (float) $atts['amount'] : 0.0;
+		$currencies = FLW_Form_Config::parse_currencies( (string) $atts['custom_currency'] );
+		$formatted  = '';
+
+		if ( $amount > 0 ) {
+			$decimals  = floor( $amount ) === $amount ? 0 : 2;
+			$formatted = trim( ( 1 === count( $currencies ) ? $currencies[0] . ' ' : '' ) . number_format_i18n( $amount, $decimals ) );
+		}
+
+		return trim( preg_replace( '/\s+/', ' ', str_replace( '{amount}', $formatted, $label ) ) );
 	}
 
 	/**
@@ -486,9 +519,7 @@ final class FLW_Shortcode_Payment_Form extends Abstract_FLW_Shortcode {
 	public function load_scripts(): void {
 		$settings = $this->settings;
 
-		$admin_payment_method      = $settings->get_option_value( 'method' );
-		$available_payment_methods = self::get_payment_options();
-		$payment_method            = $available_payment_methods[ $admin_payment_method ] ?? $available_payment_methods['all'];
+		$payment_method = FLW_Settings::payment_options();
 
 		$args = array(
 			'cb_url'     => admin_url( 'admin-ajax.php' ),

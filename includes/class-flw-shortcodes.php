@@ -35,8 +35,7 @@ class FLW_Shortcodes {
 	 * @return string;
 	 */
 	private static function check_settings_for_api_keys() {
-		$api_key_not_present = __( 'Please configure Flutterwave Payments settings correctly. API keys are still missing.', 'rave-payment-forms' );
-		return "<span class='flw-mssing-api-keys'> Note: " . $api_key_not_present . '</span>';
+		return self::setup_notice( __( 'Connect your Flutterwave account to show this payment form.', 'rave-payment-forms' ), 'api' );
 	}
 
 	/**
@@ -45,9 +44,28 @@ class FLW_Shortcodes {
 	 * @return string;
 	 */
 	private static function check_redirect_urls() {
-		$api_key_not_present = __( 'Please configure Flutterwave Payments settings correctly. Redirect Urls are missing.', 'rave-payment-forms' );
+		return self::setup_notice( __( 'Add your redirect pages to show this payment form.', 'rave-payment-forms' ), 'redirects' );
+	}
 
-		return "<span class='flw-mssing-api-keys'> Note: " . $api_key_not_present . '</span>';
+	/**
+	 * Setup notice shown to editors in place of a form that cannot work yet.
+	 *
+	 * @param string $message What is missing.
+	 * @param string $tab     Settings tab that fixes it.
+	 *
+	 * @return string
+	 */
+	private static function setup_notice( string $message, string $tab ): string {
+		self::enqueue_styles();
+
+		$url = FLW_Settings::is_onboarded() ? FLW_Admin_Settings::get_url( $tab ) : FLW_Admin_Settings::get_url();
+
+		return sprintf(
+			'<p class="flw-mssing-api-keys">%1$s <a href="%2$s">%3$s</a></p>',
+			esc_html( $message ),
+			esc_url( $url ),
+			esc_html__( 'Finish setting up Flutterwave →', 'rave-payment-forms' )
+		);
 	}
 
 	/**
@@ -102,17 +120,18 @@ class FLW_Shortcodes {
 	public static function pay_button_shortcode( $attr, $content ): string { //phpcs:ignore.
 		$admin_settings = FLW_Admin_Settings::get_instance();
 
-		if ( ! $admin_settings->is_public_key_present() && current_user_can( 'administrator' ) || current_user_can( 'editor' ) ) {
+		if ( ! $admin_settings->is_public_key_present() && current_user_can( 'edit_others_posts' ) ) {
 			return self::check_settings_for_api_keys();
 		}
 
-		if ( ! $admin_settings->are_redirect_urls_present() && current_user_can( 'administrator' ) || current_user_can( 'editor' ) ) {
+		if ( ! $admin_settings->are_redirect_urls_present() && current_user_can( 'edit_others_posts' ) ) {
 			return self::check_redirect_urls();
 		}
 
 		$shortcode = new FLW_Shortcode_Payment_Form( (array) $attr, 'flw-pay-form' );
 		$shortcode->set_button_text( $content );
 		$shortcode->load_scripts();
+		self::enqueue_styles();
 		ob_start();
 		$shortcode->render();
 		$form = ob_get_contents();
@@ -131,16 +150,17 @@ class FLW_Shortcodes {
 	public static function donation_page_shortcode( $attr, $content ): string { //phpcs:ignore.
 		$admin_settings = FLW_Admin_Settings::get_instance();
 
-		if ( ! $admin_settings->is_public_key_present() && current_user_can( 'administrator' ) || current_user_can( 'editor' ) ) {
+		if ( ! $admin_settings->is_public_key_present() && current_user_can( 'edit_others_posts' ) ) {
 			return self::check_settings_for_api_keys();
 		}
 
-		if ( ! $admin_settings->are_redirect_urls_present() && current_user_can( 'administrator' ) || current_user_can( 'editor' ) ) {
+		if ( ! $admin_settings->are_redirect_urls_present() && current_user_can( 'edit_others_posts' ) ) {
 			return self::check_redirect_urls();
 		}
 
 		$shortcode = new FLW_Shortcode_Donation_Form( (array) $attr, 'flw-donation-page' );
 		$shortcode->load_scripts();
+		self::enqueue_styles();
 		ob_start();
 		$shortcode->render();
 		$form = ob_get_contents();
@@ -157,7 +177,7 @@ class FLW_Shortcodes {
 	 *
 	 * @return void
 	 */
-	public static function render_payment_form( $atts, $btn_text ) {
+	public static function render_payment_form( $atts, $btn_text ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $btn_text is used by the included view.
 
 		_deprecated_function( __FUNCTION__, '1.0.6', 'FLW_Shortcode_Payment_Form::render' );
 
@@ -165,7 +185,7 @@ class FLW_Shortcodes {
 		foreach ( $atts as $att_key => $att_value ) {
 
 			if ( ! is_array( $att_value ) ) {
-				$data_attr .= ' data-' . $att_key . '="' . $att_value . '"';
+				$data_attr .= ' data-' . sanitize_key( $att_key ) . '="' . esc_attr( (string) $att_value ) . '"';
 			}
 		}
 		include FLW_DIR_PATH . 'views/pay-now-form.php';
@@ -177,10 +197,37 @@ class FLW_Shortcodes {
 	 * @return void
 	 */
 	public static function load_css_files() {
-		$admin_settings = FLW_Admin_Settings::get_instance();
-		if ( 'yes' !== $admin_settings->get_option_value( 'theme_style' ) ) {
-			wp_enqueue_style( 'flw_css', FLW_DIR_URL . 'assets/css/flw.css', array(), FLW_PAY_VERSION, false );
+		wp_register_style( 'flw-fonts', FLW_DIR_URL . 'assets/css/flw-fonts.css', array(), FLW_PAY_VERSION );
+		wp_register_style( 'flw_css', FLW_DIR_URL . 'assets/css/flw.css', array( 'flw-fonts' ), FLW_PAY_VERSION );
+
+		// Load in the head when the page is known to contain a form, to avoid a flash of unstyled fields.
+		$post = get_post();
+
+		if ( is_singular() && $post instanceof WP_Post ) {
+			foreach ( array( 'flw-pay-button', 'flw-pay-form', 'flw-donation-form' ) as $shortcode ) {
+				if ( has_shortcode( $post->post_content, $shortcode ) ) {
+					self::enqueue_styles();
+					break;
+				}
+			}
 		}
+	}
+
+	/**
+	 * Enqueue the form styles unless the merchant chose to use their theme's styles.
+	 *
+	 * @return void
+	 */
+	public static function enqueue_styles() {
+		if ( 'yes' === FLW_Settings::get( 'theme_style' ) ) {
+			return;
+		}
+
+		if ( ! wp_style_is( 'flw_css', 'registered' ) ) {
+			self::load_css_files();
+		}
+
+		wp_enqueue_style( 'flw_css' );
 	}
 
 	/**

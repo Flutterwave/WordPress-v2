@@ -53,7 +53,6 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 
 			add_filter( 'set-screen-option', array( $this, 'set_screen' ), 10, 3 );
 			add_action( 'init', array( $this, 'add_payment_list_post_type' ) );
-			add_action( 'admin_menu', array( $this, 'add_to_menu' ) );
 		}
 
 		/**
@@ -74,13 +73,18 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		 */
 		public function column_tx_ref( $item ) {
 			$tx_ref                  = get_post_meta( $item->ID, '_flw_rave_payment_tx_ref', true );
-			$title                   = '<strong>' . $tx_ref . '</strong>';
-			$transaction_id          = get_post_meta( $item->ID, '_flw_rave_payment_id', true );
-			$update_transaction_link = get_site_url() . '/wp-json/flutterwave/v1/update-transaction?post_id=' . $item->ID . '&tx_ref=' . $tx_ref;
+			$title                   = '<strong>' . esc_html( $tx_ref ) . '</strong>';
+			$update_transaction_link = add_query_arg(
+				array(
+					'post_id'  => absint( $item->ID ),
+					'_wpnonce' => wp_create_nonce( 'wp_rest' ),
+				),
+				rest_url( 'flutterwave/v1/update-transaction' )
+			);
 
 			$actions = array(
-				'delete' => sprintf( '<a href="%s">Delete</a>', get_delete_post_link( absint( $item->ID ) ) ),
-				'update' => sprintf( '<a href="%s">Update</a>', $update_transaction_link ),
+				'delete' => sprintf( '<a href="%s">Delete</a>', esc_url( get_delete_post_link( absint( $item->ID ) ) ) ),
+				'update' => sprintf( '<a href="%s">Update</a>', esc_url( $update_transaction_link ) ),
 			);
 
 			return $title . $this->row_actions( $actions );
@@ -95,7 +99,7 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		 */
 		public function column_amount( $item ) {
 			$amount = get_post_meta( $item->ID, '_flw_rave_payment_amount', true );
-			return number_format( $amount, 2 );
+			return esc_html( number_format( (float) $amount, 2 ) );
 		}
 
 		/**
@@ -106,7 +110,7 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		 * @return string
 		 */
 		public function column_currency( $item ) {
-			return get_post_meta( $item->ID, '_flw_rave_payment_currency', true );
+			return esc_html( get_post_meta( $item->ID, '_flw_rave_payment_currency', true ) );
 		}
 
 		/**
@@ -123,9 +127,9 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 				case 'customer':
 				case 'fullname':
 				case 'status':
-					return get_post_meta( $item->ID, '_flw_rave_payment_' . $column_name, true );
+					return esc_html( get_post_meta( $item->ID, '_flw_rave_payment_' . $column_name, true ) );
 				case 'date':
-					return $item->post_date;
+					return esc_html( $item->post_date );
 				default:
 					return null;
 			}
@@ -161,8 +165,8 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		public function column_cb( $item ): string {
 
 			return sprintf(
-				'<input type="checkbox" name="bulk-delete[]" value="%s" />',
-				$item->ID
+				'<input type="checkbox" name="bulk-delete[]" value="%d" />',
+				absint( $item->ID )
 			);
 		}
 
@@ -195,31 +199,6 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 		 */
 		public function set_screen( $status, $option, $value ) {
 			return $value;
-		}
-
-		/**
-		 * Add to menu.
-		 *
-		 * @return void
-		 */
-		public function add_to_menu() {
-			$hook = add_submenu_page(
-				'flutterwave-payments',
-				__( 'Transaction List', 'rave-payment-forms' ),
-				__( 'Transactions', 'rave-payment-forms' ),
-				'manage_options',
-				'flutterwave-payments-transactions',
-				array( $this, 'payment_list_table' )
-			);
-		}
-
-		/**
-		 * Display table list.
-		 *
-		 * @return void
-		 */
-		public function payment_list_table() {
-			require_once FLW_DIR_PATH . 'views/payment-list-table.php';
 		}
 
 		/**
@@ -305,4 +284,4 @@ if ( ! class_exists( 'FLW_Payment_List' ) ) {
 			return self::$instance;
 		}
 	}
-}
+}//end if

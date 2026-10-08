@@ -15,7 +15,7 @@ final class FLW_Shortcode_Donation_Form extends Abstract_FLW_Shortcode {
 	 *
 	 * @var string
 	 */
-	protected string $button_text = 'DONATE ONCE';
+	protected string $button_text = 'Donate once';
 	/**
 	 * Initialize shortcode.
 	 *
@@ -46,9 +46,8 @@ final class FLW_Shortcode_Donation_Form extends Abstract_FLW_Shortcode {
 	 * @since  1.0.6
 	 */
 	protected function parse_attributes( array $attributes = array() ): array {
-		$email                = self::use_current_user_email( $attributes ) ? wp_get_current_user()->user_email : '';
-		$admin_payment_method = $this->settings->get_option_value( 'method' );
-		$payment_method       = self::get_payment_options()[ $admin_payment_method ] ?? self::get_payment_options()['all'];
+		$email          = self::use_current_user_email( $attributes ) ? wp_get_current_user()->user_email : '';
+		$payment_method = FLW_Settings::payment_options();
 
 		$custom_currency = 'USD,KES,ZAR,GHS,TZS,EUR,NGN,GBP,UGX,RWF,ZMW';
 		return shortcode_atts(
@@ -60,6 +59,11 @@ final class FLW_Shortcode_Donation_Form extends Abstract_FLW_Shortcode {
 				'country'             => $this->settings->get_option_value( 'country' ),
 				'payment_method'      => $payment_method,
 				'email'               => $email,
+				'currency'            => '',
+				'heading'             => '',
+				'message'             => '',
+				'amounts'             => '',
+				'show_frequency'      => '1',
 			),
 			$attributes,
 			$this->type
@@ -81,16 +85,34 @@ final class FLW_Shortcode_Donation_Form extends Abstract_FLW_Shortcode {
 	 * @return void
 	 */
 	public function render(): void {
-		$atts      = $this->get_attributes();
-		$btn_text  = $this->button_text;
-		$data_attr = '';
-		foreach ( $atts as $att_key => $att_value ) {
+		$atts          = $this->get_attributes();
+		$btn_text      = $this->button_text;
+		$data_attr     = self::build_data_attributes( $atts, array( 'heading', 'message', 'amounts', 'show_frequency' ) );
+		$currencies    = '' !== (string) $atts['currency'] ? (string) $atts['currency'] : (string) $atts['custom_currency'];
+		$signed_config = self::get_signed_config_fields( $atts['amount'], $currencies );
+		$presets       = self::preset_amounts( (string) $atts['amounts'] );
+		include FLW_DIR_PATH . 'views/donation-payment.php';
+	}
 
-			if ( ! is_array( $att_value ) ) {
-				$data_attr .= ' data-' . $att_key . '="' . $att_value . '"';
+	/**
+	 * Parse a comma separated list of suggested donation amounts.
+	 *
+	 * @param string $amounts Comma separated amounts.
+	 *
+	 * @return float[] Up to six distinct positive amounts.
+	 */
+	public static function preset_amounts( string $amounts ): array {
+		$values = array();
+
+		foreach ( explode( ',', $amounts ) as $amount ) {
+			$amount = trim( $amount );
+
+			if ( is_numeric( $amount ) && (float) $amount > 0 ) {
+				$values[ (string) (float) $amount ] = (float) $amount;
 			}
 		}
-		include FLW_DIR_PATH . 'views/donation-payment.php';
+
+		return array_slice( array_values( $values ), 0, 6 );
 	}
 
 	/**
@@ -99,9 +121,8 @@ final class FLW_Shortcode_Donation_Form extends Abstract_FLW_Shortcode {
 	 * @return void
 	 */
 	public function load_scripts(): void {
-		$settings             = $this->settings;
-		$admin_payment_method = $settings->get_option_value( 'method' );
-		$payment_method       = self::get_payment_options()[ $admin_payment_method ] ?? self::get_payment_options()['all'];
+		$settings       = $this->settings;
+		$payment_method = FLW_Settings::payment_options();
 
 		$args = array(
 			'cb_url'     => admin_url( 'admin-ajax.php' ),

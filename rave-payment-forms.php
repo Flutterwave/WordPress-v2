@@ -3,8 +3,8 @@
  * Plugin Name: Flutterwave Payments
  * Plugin URI: http://flutterwave.com/
  * Description: Flutterwave payment gateway forms, accept local and international payments securely.
- * Version: 1.0.7
- * Requires at least: 5.2
+ * Version: 1.1.0
+ * Requires at least: 6.4
  * Requires PHP: 7.4
  * Author: Flutterwave Developers
  * Author URI: https://developer.flutterwave.com/
@@ -12,8 +12,6 @@
  * License: MIT License
  * Text Domain: rave-payment-forms
  * Domain Path: i18n/languages
- * Requires at least:      5.6
- * Requires PHP:           7.4
  *
  * @package Flutterwave Payments
  **/
@@ -30,4 +28,3 @@ if ( ! class_exists( 'Flutterwave_Payments' ) ) {
 	require_once dirname( FLW_PAY_PLUGIN_FILE ) . '/includes/class-flutterwave-payments.php';
 	$flw_pay_class = Flutterwave_Payments::get_instance();
 }
-
