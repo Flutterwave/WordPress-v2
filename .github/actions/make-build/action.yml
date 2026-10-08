@@ -21,6 +21,9 @@ runs:
           shell: bash
           env:
               RELEASE_FILENAME: 'rave-payment-forms.zip'
+              # The runner's PHP loads Xdebug, whose 256-frame stack limit aborts
+              # `wp i18n make-pot` while it parses the minified build/admin.js.
+              XDEBUG_MODE: 'off'
           run: |
               npm ci
               npm run build
