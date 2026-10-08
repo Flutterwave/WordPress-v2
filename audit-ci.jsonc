@@ -1,0 +1,19 @@
+{
+	"$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+	"moderate": true,
+	"report-type": "important",
+	"allowlist": [
+		// No patched release exists yet (latest published versions are still affected).
+		// Dev/build tooling only; nothing here ships in the plugin zip.
+		"GHSA-vfj7-8cjw-p6xm", // braces (via @wordpress/scripts)
+		"GHSA-hp3w-g68c-fv3c", // sprintf-js (via @wordpress/scripts)
+
+		// simple-git (via @wordpress/env). Fixed only in simple-git 4.x, which drops the
+		// default export wp-env 11.17 relies on. wp-env only clones sources from our own
+		// .wp-env.json. Remove once @wordpress/env supports simple-git >= 4.0.1.
+		"GHSA-v5rq-49vh-5v5c",
+		"GHSA-x6jw-m9v5-85vh",
+		"GHSA-g4wm-2vf7-vfgr",
+		"GHSA-858h-whjf-mvg5"
+	]
+}
